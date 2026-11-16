@@ -9,6 +9,7 @@ from django.utils import timezone
 LOAN_PERIOD_DAYS = 14
 MAX_UNRETURNED_BOOKS = 3
 FINE_PER_DAY_UGX = 500
+MAX_LOAN_RENEWALS = 1
 
 
 class Author(models.Model):
@@ -31,6 +32,10 @@ class Book(models.Model):
     authors = models.ManyToManyField(Author, related_name="books", blank=True)
     total_copies = models.PositiveIntegerField(default=1)
     available_copies = models.PositiveIntegerField(default=1)
+    staff_pick = models.BooleanField(
+        default=False,
+        help_text="Highlight this title as a librarian's recommendation.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -89,6 +94,8 @@ class Loan(models.Model):
     borrowed_at = models.DateTimeField(default=timezone.now, editable=False)
     due_date = models.DateField(editable=False)
     returned_at = models.DateTimeField(null=True, blank=True)
+    renewed_count = models.PositiveSmallIntegerField(default=0, editable=False)
+    renewed_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     class Meta:
         ordering = ("-borrowed_at", "-pk")
@@ -129,6 +136,73 @@ class Loan(models.Model):
     def fine_owed(self):
         return self.overdue_days * FINE_PER_DAY_UGX
 
+    @property
+    def can_renew(self):
+        return (
+            not self.is_returned
+            and not self.is_overdue
+            and self.renewed_count < MAX_LOAN_RENEWALS
+        )
+
     def __str__(self):
         status = "returned" if self.is_returned else "on loan"
         return f"{self.book.title} — {self.member.membership_number} ({status})"
+
+
+class Review(models.Model):
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+    )
+    rating = models.PositiveSmallIntegerField()
+    comment = models.TextField(blank=True, max_length=1200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-created_at", "-pk")
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(rating__gte=1) & Q(rating__lte=5),
+                name="review_rating_between_1_and_5",
+            ),
+            models.UniqueConstraint(
+                fields=("book", "member"),
+                name="review_unique_per_member_and_book",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.rating}/5 — {self.book.title} ({self.member.membership_number})"
+
+
+class ReadingListItem(models.Model):
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name="reading_list",
+    )
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+        related_name="reading_list_entries",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at", "-pk")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("member", "book"),
+                name="reading_list_unique_per_member_and_book",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.member.membership_number} — {self.book.title}"

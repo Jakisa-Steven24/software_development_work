@@ -39,6 +39,30 @@
       <div class="empty-state empty-state--staff"><span class="empty-icon" aria-hidden="true">✓</span><div><h3>{% if query %}No overdue loans match that search.{% else %}All clear — nothing is overdue.{% endif %}</h3><p>{% if query %}Try another member name, membership number, title, or ISBN.{% else %}There are no books past their due date today.{% endif %}</p></div></div>
     {% endif %}
   </section>
+
+  {% if due_soon %}
+    <section class="overdue-panel due-soon-panel" aria-labelledby="due-soon-heading">
+      <div class="overdue-panel-top">
+        <div><p class="eyebrow">COMING DUE</p><h2 id="due-soon-heading">Due in the next 7 days</h2></div>
+        <span class="result-count">{{ due_soon|length }} loan{{ due_soon|length|pluralize }}</span>
+      </div>
+      <div class="table-wrap">
+        <table class="overdue-table">
+          <thead><tr><th>Book &amp; ISBN</th><th>Member</th><th>Due date</th><th>Time left</th></tr></thead>
+          <tbody>
+            {% for loan in due_soon %}
+              <tr>
+                <td><strong>{{ loan.book.title }}</strong><span class="table-sub">ISBN {{ loan.book.isbn }}</span></td>
+                <td><strong>{{ loan.member.user.get_full_name|default:loan.member.user.username }}</strong><span class="table-sub">{{ loan.member.membership_number }} · {{ loan.member.phone_number }}</span></td>
+                <td>{{ loan.due_date|date:"j M Y" }}</td>
+                <td>{% if loan.days_until_due == 0 %}<span class="late-badge late-badge--soft">Today</span>{% elif loan.days_until_due == 1 %}<span class="late-badge late-badge--soft">Tomorrow</span>{% else %}<span class="late-badge late-badge--soft">{{ loan.days_until_due }} days</span>{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% endif %}
   <p class="fine-policy"><span aria-hidden="true">ⓘ</span> Fines accrue at UGX 500 per overdue day. A book becomes overdue the day after its due date.</p>
 </div>
 {% endblock %}

@@ -4,11 +4,33 @@
 {% block content %}
 <div class="shell page-shell">
   <section class="page-intro page-intro--compact">
-    <div><p class="eyebrow">YOUR READING LIST</p><h1>My <em>loans.</em></h1><p>Keep track of what you have borrowed and when it is due back.</p></div>
+    <div><p class="eyebrow">YOUR READING LIST</p><h1>My <em>loans.</em></h1><p>Keep track of what you have borrowed and when it is due back.</p><a class="text-link shelf-link" href="{% url 'my_shelf' %}">Go to my shelf <span aria-hidden="true">→</span></a></div>
     {% if member %}<div class="member-chip"><span class="member-chip-mark" aria-hidden="true">CS</span><span><small>MEMBER NUMBER</small><strong>{{ member.membership_number }}</strong></span></div>{% endif %}
   </section>
 
   {% if member %}
+    {% if stats %}
+      <section class="member-stats" aria-label="Your reading stats">
+        <div class="member-stat"><span class="member-stat-number">{{ stats.total_borrowed }}</span><span class="member-stat-label">books borrowed</span></div>
+        <div class="member-stat"><span class="member-stat-number">{{ stats.on_time_returns }}</span><span class="member-stat-label">on-time returns</span></div>
+        <div class="member-stat"><span class="member-stat-number">{{ stats.active_count }}</span><span class="member-stat-label">on loan now</span></div>
+        <div class="member-stat"><span class="member-stat-number">{{ stats.shelf_count }}</span><span class="member-stat-label">on my shelf</span></div>
+      </section>
+
+      <section class="badge-block" aria-label="Your reading badges">
+        <div class="section-heading section-heading--simple"><div><p class="eyebrow">READING BADGES</p><h2>Your shelf of achievements</h2></div>{% if due_soon_count %}<span class="section-side-note">Heads up — {{ due_soon_count }} book{{ due_soon_count|pluralize }} due within 3 days.</span>{% endif %}</div>
+        <ul class="badge-row">
+          {% for badge in badges %}
+            <li class="badge {% if badge.earned %}badge--earned{% else %}badge--locked{% endif %}" title="{{ badge.description }}">
+              <span class="badge-glyph" aria-hidden="true">{{ badge.glyph }}</span>
+              <span class="badge-name">{{ badge.name }}</span>
+              <span class="badge-desc">{{ badge.description }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
     <section class="loan-section">
       <div class="section-heading section-heading--simple"><div><p class="eyebrow">CURRENTLY WITH YOU</p><h2>On loan <span class="count-badge">{{ active_loans|length }}</span></h2></div><span class="section-side-note">Return by your due date to avoid a fine.</span></div>
       {% if active_loans %}
@@ -19,19 +41,35 @@
               <div class="loan-card-main">
                 <p class="loan-card-kicker">{{ loan.book.publication_year }} · ISBN {{ loan.book.isbn }}</p>
                 <h3><a href="{% url 'book_detail' loan.book.pk %}">{{ loan.book.title }}</a></h3>
-                <p class="loan-due">Borrowed {{ loan.borrowed_at|date:"j M Y" }} <span aria-hidden="true">·</span> Due {{ loan.due_date|date:"j M Y" }}</p>
+                <p class="loan-due">Borrowed {{ loan.borrowed_at|date:"j M Y" }} <span aria-hidden="true">·</span> Due {{ loan.due_date|date:"j M Y" }}{% if loan.renewed_count %} <span aria-hidden="true">·</span> Renewed {{ loan.renewed_count }}&times;{% endif %}</p>
               </div>
               <div class="loan-card-status">
                 {% if loan.is_overdue %}
                   <span class="status-tag status-tag--late">{{ loan.overdue_days }} day{{ loan.overdue_days|pluralize }} late</span>
                   <strong class="fine-amount">UGX {{ loan.fine_owed|intcomma }}</strong>
+                {% elif loan.days_until_due == 0 %}
+                  <span class="status-tag status-tag--due">Due today</span>
+                {% elif loan.days_until_due == 1 %}
+                  <span class="status-tag status-tag--due">Due tomorrow</span>
+                {% elif loan.days_until_due <= 3 %}
+                  <span class="status-tag status-tag--due">Due in {{ loan.days_until_due }} days</span>
                 {% else %}
                   <span class="status-tag status-tag--due">Return by {{ loan.due_date|date:"j M" }}</span>
                 {% endif %}
-                <form method="post" action="{% url 'return_loan' loan.pk %}">
-                  {% csrf_token %}
-                  <button class="button button--small {% if loan.is_overdue %}button--warning{% else %}button--outline{% endif %}" type="submit">Return this book</button>
-                </form>
+                <div class="loan-actions">
+                  {% if loan.can_renew %}
+                    <form method="post" action="{% url 'renew_loan' loan.pk %}">
+                      {% csrf_token %}
+                      <button class="button button--small button--outline" type="submit">Renew 14 days</button>
+                    </form>
+                  {% elif not loan.is_overdue and loan.renewed_count >= max_renewals %}
+                    <span class="renewal-used">Renewal used</span>
+                  {% endif %}
+                  <form method="post" action="{% url 'return_loan' loan.pk %}">
+                    {% csrf_token %}
+                    <button class="button button--small {% if loan.is_overdue %}button--warning{% else %}button--outline{% endif %}" type="submit">Return this book</button>
+                  </form>
+                </div>
               </div>
             </article>
           {% endfor %}

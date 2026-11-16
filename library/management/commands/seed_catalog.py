@@ -5,6 +5,9 @@ from library.models import Author, Book
 
 
 # ISBNs and years identify the listed editions, not first publication dates.
+# ISBNs of starter titles the library considers librarian picks from day one.
+STAFF_PICK_ISBNS = {"9781945492010", "9780385474542"}
+
 STARTER_BOOKS = (
     (
         "Kintu", "Jennifer Nansubuga Makumbi", "9781945492010", 2017,
@@ -70,6 +73,7 @@ class Command(BaseCommand):
                     "description": description,
                     "total_copies": 3,
                     "available_copies": 3,
+                    "staff_pick": isbn in STAFF_PICK_ISBNS,
                 },
             )
             if created:

@@ -1,0 +1,6 @@
+{% load library_extras %}
+{% if count %}
+  <span class="stars" role="img" aria-label="Rated {{ avg|floatformat:1 }} out of 5"><span class="stars-base" aria-hidden="true">★★★★★</span><span class="stars-fill" style="width: {{ avg|star_pct }}%" aria-hidden="true">★★★★★</span></span><span class="rating-count">{{ avg|floatformat:1 }} · {{ count }} review{{ count|pluralize }}</span>
+{% else %}
+  <span class="rating-count rating-count--none">Not reviewed yet</span>
+{% endif %}
