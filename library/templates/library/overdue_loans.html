@@ -1,0 +1,44 @@
+{% extends "library/base.html" %}
+{% load humanize %}
+{% block title %}Overdue loans{% endblock %}
+{% block content %}
+<div class="shell page-shell">
+  <section class="page-intro page-intro--staff">
+    <div><p class="eyebrow">STAFF DESK · CIRCULATION</p><h1>Overdue <em>loans.</em></h1><p>Follow up on books that have passed their due date and help them find their way back.</p></div>
+    <div class="staff-total"><span class="staff-total-icon" aria-hidden="true">◷</span><small>FINES OWED</small><strong>UGX {{ total_fines|intcomma }}</strong><span>{{ overdue_count }} overdue loan{{ overdue_count|pluralize }}</span></div>
+  </section>
+
+  <section class="overdue-panel">
+    <div class="overdue-panel-top">
+      <div><p class="eyebrow">NEEDS ATTENTION</p><h2>Books to follow up</h2></div>
+      <form method="get" action="{% url 'overdue_loans' %}" class="staff-search" role="search">
+        <label class="sr-only" for="overdue-search">Search loans</label>
+        <input id="overdue-search" name="q" type="search" value="{{ query }}" placeholder="Search member or book">
+        <button class="button button--outline button--small" type="submit">Search</button>
+      </form>
+    </div>
+    {% if overdue_loans %}
+      <div class="table-wrap">
+        <table class="overdue-table">
+          <thead><tr><th>Book &amp; ISBN</th><th>Member</th><th>Due date</th><th>Late by</th><th>Fine owed</th><th><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            {% for loan in overdue_loans %}
+              <tr>
+                <td><strong>{{ loan.book.title }}</strong><span class="table-sub">ISBN {{ loan.book.isbn }}</span></td>
+                <td><strong>{{ loan.member.user.get_full_name|default:loan.member.user.username }}</strong><span class="table-sub">{{ loan.member.membership_number }} · {{ loan.member.phone_number }}</span></td>
+                <td>{{ loan.due_date|date:"j M Y" }}</td>
+                <td><span class="late-badge">{{ loan.overdue_days }} day{{ loan.overdue_days|pluralize }}</span></td>
+                <td><strong class="fine-amount">UGX {{ loan.fine_owed|intcomma }}</strong><span class="table-sub">UGX 500 / day</span></td>
+                <td><form method="post" action="{% url 'return_loan' loan.pk %}">{% csrf_token %}<button class="button button--small button--outline" type="submit">Mark returned</button></form></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state empty-state--staff"><span class="empty-icon" aria-hidden="true">✓</span><div><h3>{% if query %}No overdue loans match that search.{% else %}All clear — nothing is overdue.{% endif %}</h3><p>{% if query %}Try another member name, membership number, title, or ISBN.{% else %}There are no books past their due date today.{% endif %}</p></div></div>
+    {% endif %}
+  </section>
+  <p class="fine-policy"><span aria-hidden="true">ⓘ</span> Fines accrue at UGX 500 per overdue day. A book becomes overdue the day after its due date.</p>
+</div>
+{% endblock %}
