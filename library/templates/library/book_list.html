@@ -1,37 +1,37 @@
 {% extends "library/base.html" %}
-{% block title %}Browse books{% endblock %}
+{% block title %}Catalogue{% endblock %}
 {% block content %}
 <div class="shell page-shell">
   <section class="page-intro page-intro--catalog">
     <div>
-      <p class="eyebrow">THE COMMUNITY COLLECTION</p>
-      <h1>Find your next <em>good read.</em></h1>
-      <p>Every book has a story. Search the shelves and see what is ready to come home with you.</p>
+      <p class="eyebrow">THE {{ brand.institution|upper }} CATALOGUE</p>
+      <h1>Find your next <em>set text.</em></h1>
+      <p>Everything the library holds for your programme sits in one catalogue. Search it by title, author or ISBN, then see what is ready to collect.</p>
     </div>
-    <div class="catalog-mark" aria-hidden="true"><span>CS</span><small>SHARED<br>WITH CARE</small></div>
+    <div class="catalog-mark" aria-hidden="true"><span>{{ brand.monogram }}</span><small>SHARED<br>BY STUDENTS</small></div>
   </section>
 
-  <section class="catalog-tools" aria-label="Search and filter books">
+  <section class="catalog-tools" aria-label="Search and filter titles">
     <form method="get" action="{% url 'catalog' %}" class="search-form" role="search">
       <label class="sr-only" for="book-search">Search by title, author, or ISBN</label>
       <span class="search-icon" aria-hidden="true">⌕</span>
       <input id="book-search" name="q" type="search" placeholder="Search title, author or ISBN" value="{{ query }}">
       <label class="sr-only" for="availability-filter">Availability</label>
       <select id="availability-filter" name="availability">
-        <option value="all" {% if availability != 'available' %}selected{% endif %}>All books</option>
-        <option value="available" {% if availability == 'available' %}selected{% endif %}>Available now</option>
+        <option value="all" {% if availability != 'available' %}selected{% endif %}>All titles</option>
+        <option value="available" {% if availability == 'available' %}selected{% endif %}>On the shelf now</option>
       </select>
       <button class="button button--primary" type="submit">Search <span aria-hidden="true">→</span></button>
     </form>
-    <p class="result-count">{{ result_count }} title{{ result_count|pluralize }} on the shelf</p>
+    <p class="result-count">{{ result_count }} title{{ result_count|pluralize }} in this list</p>
   </section>
 
   {% if page_obj.object_list %}
-    <section class="book-grid" aria-label="Book results">
+    <section class="book-grid" aria-label="Catalogue results">
       {% for book in page_obj %}{% include "library/includes/book_card.html" with book=book %}{% endfor %}
     </section>
     {% if page_obj.has_other_pages %}
-      <nav class="pagination" aria-label="Book pages">
+      <nav class="pagination" aria-label="Catalogue pages">
         {% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;availability={{ availability|urlencode }}&amp;page={{ page_obj.previous_page_number }}" rel="prev">← Previous</a>{% else %}<span class="pagination-muted">← Previous</span>{% endif %}
         <span>Page <strong>{{ page_obj.number }}</strong> of {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;availability={{ availability|urlencode }}&amp;page={{ page_obj.next_page_number }}" rel="next">Next →</a>{% else %}<span class="pagination-muted">Next →</span>{% endif %}
@@ -40,8 +40,8 @@
   {% else %}
     <div class="empty-state empty-state--catalog">
       <span class="empty-icon" aria-hidden="true">⌕</span>
-      <div><h2>No books found</h2><p>Try another title, author, or ISBN. A different search might uncover a new favourite.</p></div>
-      <a class="button button--outline" href="{% url 'catalog' %}">Clear search</a>
+      <div><h2>No titles found</h2><p>Try a different title, author, or ISBN — or ask at the library desk and we will check the reserve collection for you.</p></div>
+      <a class="button button--outline" href="{% url 'catalog' %}">Clear the search</a>
     </div>
   {% endif %}
 </div>

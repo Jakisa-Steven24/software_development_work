@@ -1,45 +1,46 @@
 {% extends "library/base.html" %}
-{% block title %}A library for everyone{% endblock %}
+{% load humanize %}
+{% block title %}The college library, open to every student{% endblock %}
 {% block content %}
 <div class="shell page-shell">
   <section class="hero">
     <div class="hero-copy">
-      <p class="eyebrow eyebrow--light"><span class="eyebrow-dot"></span> A COMMUNITY LIBRARY, MADE FOR SHARING</p>
-      <h1>Find a story.<br><em>Pass it on.</em></h1>
-      <p class="hero-description">A good book can take you anywhere. Find your next read on our shelves, borrow it for two weeks, then send it on to its next reader.</p>
+      <p class="eyebrow eyebrow--light"><span class="eyebrow-dot"></span> {{ brand.institution }} · LIBRARY SERVICES</p>
+      <h1>Your next chapter<br><em>starts here.</em></h1>
+      <p class="hero-description">{{ brand.name }} is the borrowing register for {{ brand.institution }}. Search the catalogue, borrow the texts on your reading list for {{ loan_policy.period_days }} days, and return them so the next student can begin.</p>
       <div class="hero-actions">
-        <a class="button button--cream" href="{% url 'catalog' %}">Explore the shelves <span aria-hidden="true">↗</span></a>
+        <a class="button button--cream" href="{% url 'catalog' %}">Search the catalogue <span aria-hidden="true">↗</span></a>
         {% if user.is_authenticated %}
-          <a class="hero-text-link" href="{% url 'my_loans' %}">See my loans <span aria-hidden="true">→</span></a>
+          <a class="hero-text-link" href="{% url 'my_loans' %}">See my borrowings <span aria-hidden="true">→</span></a>
         {% else %}
-          <a class="hero-text-link" href="{% url 'login' %}">Already a member? Sign in <span aria-hidden="true">→</span></a>
+          <a class="hero-text-link" href="{% url 'login' %}">Already registered? Sign in <span aria-hidden="true">→</span></a>
         {% endif %}
       </div>
-      <div class="hero-trust"><span class="trust-mark" aria-hidden="true">✓</span> Borrow for free · Keep it for 14 days · Share the joy</div>
+      <div class="hero-trust"><span class="trust-mark" aria-hidden="true">✓</span> Free to borrow · {{ loan_policy.period_days }}-day loans · {{ loan_policy.max_titles }} titles at a time</div>
     </div>
     <div class="hero-art">
       <div class="reading-shelf">
-        <span class="shelf-label">FROM OUR COLLECTION</span>
+        <span class="shelf-label">NEW ON THE SHELVES</span>
         {% for book in latest_books %}
           <a class="shelf-book" href="{% url 'book_detail' book.pk %}"><strong>{{ book.title }}</strong><small>{{ book.authors.all|join:", " }}</small></a>
         {% empty %}
-          <p>Browse the catalogue to find your next read.</p>
+          <p>Search the catalogue to find your first title.</p>
         {% endfor %}
       </div>
     </div>
   </section>
 
-  <section class="stats-strip" aria-label="Library at a glance">
-    <div class="stats-intro"><span class="tiny-label">OUR SHARED SHELF</span><p>Small collection.<br><strong>Big possibilities.</strong></p></div>
-    <div class="stat"><span class="stat-number">{{ book_count }}</span><span class="stat-label">book titles</span></div>
-    <div class="stat"><span class="stat-number">{{ available_title_count }}</span><span class="stat-label">titles in stock</span></div>
-    <div class="stat"><span class="stat-number">{{ member_count }}</span><span class="stat-label">community members</span></div>
+  <section class="stats-strip" aria-label="The library at a glance">
+    <div class="stats-intro"><span class="tiny-label">THE COLLEGE COLLECTION</span><p>One catalogue.<br><strong>Every programme.</strong></p></div>
+    <div class="stat"><span class="stat-number">{{ book_count }}</span><span class="stat-label">titles catalogued</span></div>
+    <div class="stat"><span class="stat-number">{{ available_title_count }}</span><span class="stat-label">titles on the shelf</span></div>
+    <div class="stat"><span class="stat-number">{{ member_count }}</span><span class="stat-label">registered students</span></div>
   </section>
 
   <section class="section-block">
     <div class="section-heading">
-      <div><p class="eyebrow">THE SHELVES</p><h2>Recently added</h2></div>
-      <a class="text-link" href="{% url 'catalog' %}">View all books <span aria-hidden="true">→</span></a>
+      <div><p class="eyebrow">THE COLLECTION</p><h2>Recently catalogued</h2></div>
+      <a class="text-link" href="{% url 'catalog' %}">View the full catalogue <span aria-hidden="true">→</span></a>
     </div>
     {% if latest_books %}
       <div class="book-grid book-grid--featured">
@@ -47,18 +48,18 @@
       </div>
     {% else %}
       <div class="empty-state empty-state--wide">
-        <span class="empty-icon" aria-hidden="true">CS</span>
-        <div><h3>The shelves are waiting for their first story.</h3><p>Library staff can add books from the admin desk.</p></div>
-        {% if user.is_staff %}<a class="button button--outline" href="{% url 'admin:library_book_add' %}">Add a book</a>{% endif %}
+        <span class="empty-icon" aria-hidden="true">{{ brand.monogram }}</span>
+        <div><h3>The catalogue is waiting for its first title.</h3><p>Library staff can add titles from the admin desk.</p></div>
+        {% if user.is_staff %}<a class="button button--outline" href="{% url 'admin:library_book_add' %}">Add a title</a>{% endif %}
       </div>
     {% endif %}
   </section>
 
   <section class="how-it-works">
-    <div class="how-heading"><p class="eyebrow eyebrow--light">EASY AS TURNING A PAGE</p><h2>Good reads,<br>made simple.</h2><p>Our little library works best when everyone shares.</p></div>
-    <div class="how-step"><span class="step-number">01</span><span class="step-icon" aria-hidden="true">⌕</span><h3>Find your next read</h3><p>Search by title, author, or ISBN and see what is ready to borrow.</p></div>
-    <div class="how-step"><span class="step-number">02</span><span class="step-icon" aria-hidden="true">↗</span><h3>Borrow for 14 days</h3><p>Sign in as a member and borrow up to three books at a time.</p></div>
-    <div class="how-step"><span class="step-number">03</span><span class="step-icon" aria-hidden="true">↩</span><h3>Return and pass it on</h3><p>Bring your book back on time so the next reader can enjoy it too.</p></div>
+    <div class="how-heading"><p class="eyebrow eyebrow--light">HOW BORROWING WORKS</p><h2>Study well,<br>share well.</h2><p>The collection works best when every copy comes back.</p></div>
+    <div class="how-step"><span class="step-number">01</span><span class="step-icon" aria-hidden="true">⌕</span><h3>Search the catalogue</h3><p>Look up a title, an author, or an ISBN and see which copies are on the shelf.</p></div>
+    <div class="how-step"><span class="step-number">02</span><span class="step-icon" aria-hidden="true">↗</span><h3>Borrow for {{ loan_policy.period_days }} days</h3><p>Sign in with your student account and borrow up to {{ loan_policy.max_titles }} titles at a time.</p></div>
+    <div class="how-step"><span class="step-number">03</span><span class="step-icon" aria-hidden="true">↩</span><h3>Return it to the desk</h3><p>Bring it back by the due date. Late returns accrue UGX {{ loan_policy.fine_per_day|intcomma }} for each day overdue.</p></div>
   </section>
 </div>
 {% endblock %}

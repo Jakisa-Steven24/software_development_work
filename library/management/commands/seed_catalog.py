@@ -4,7 +4,8 @@ from django.db import transaction
 from library.models import Author, Book
 
 
-# ISBNs and years identify the listed editions, not first publication dates.
+# Foundation reading list. ISBNs and years identify the listed editions,
+# not first publication dates.
 STARTER_BOOKS = (
     (
         "Kintu", "Jennifer Nansubuga Makumbi", "9781945492010", 2017,
@@ -55,7 +56,7 @@ STARTER_BOOKS = (
 
 
 class Command(BaseCommand):
-    help = "Add nine starter titles without changing existing books, authors or stock."
+    help = "Add the nine foundation titles without changing existing records, authors or stock."
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -79,4 +80,4 @@ class Command(BaseCommand):
                 book.authors.add(author)
                 added += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Added {added} starter titles; existing titles were left unchanged."))
+        self.stdout.write(self.style.SUCCESS(f"Added {added} foundation titles; existing records were left unchanged."))

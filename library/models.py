@@ -6,17 +6,19 @@ from django.db import models
 from django.db.models import F, Q
 from django.utils import timezone
 
-LOAN_PERIOD_DAYS = 14
-MAX_UNRETURNED_BOOKS = 3
-FINE_PER_DAY_UGX = 500
+LOAN_PERIOD_DAYS = 21
+MAX_UNRETURNED_BOOKS = 4
+FINE_PER_DAY_UGX = 1_000
 
 
 class Author(models.Model):
     name = models.CharField(max_length=160)
-    biography = models.TextField(blank=True)
+    biography = models.TextField("biography", blank=True)
 
     class Meta:
         ordering = ("name", "pk")
+        verbose_name = "author"
+        verbose_name_plural = "authors"
 
     def __str__(self):
         return self.name
@@ -24,10 +26,10 @@ class Author(models.Model):
 
 class Book(models.Model):
     title = models.CharField(max_length=255, db_index=True)
-    genre = models.CharField(max_length=80, blank=True)
-    description = models.TextField(blank=True)
+    genre = models.CharField("subject area", max_length=80, blank=True)
+    description = models.TextField("summary", blank=True)
     isbn = models.CharField("ISBN", max_length=20, unique=True)
-    publication_year = models.PositiveSmallIntegerField()
+    publication_year = models.PositiveSmallIntegerField("year published")
     authors = models.ManyToManyField(Author, related_name="books", blank=True)
     total_copies = models.PositiveIntegerField(default=1)
     available_copies = models.PositiveIntegerField(default=1)
@@ -36,6 +38,8 @@ class Book(models.Model):
 
     class Meta:
         ordering = ("title", "pk")
+        verbose_name = "title"
+        verbose_name_plural = "titles"
         constraints = [
             models.CheckConstraint(
                 condition=Q(available_copies__lte=F("total_copies")),
@@ -64,12 +68,14 @@ class Member(models.Model):
         on_delete=models.CASCADE,
         related_name="member",
     )
-    membership_number = models.CharField(max_length=32, unique=True)
-    phone_number = models.CharField(max_length=32)
-    joined_at = models.DateTimeField(auto_now_add=True)
+    membership_number = models.CharField("student number", max_length=32, unique=True)
+    phone_number = models.CharField("phone number", max_length=32)
+    joined_at = models.DateTimeField("registered on", auto_now_add=True)
 
     class Meta:
         ordering = ("membership_number",)
+        verbose_name = "student"
+        verbose_name_plural = "students"
 
     def __str__(self):
         return f"{self.membership_number} — {self.user.get_full_name() or self.user.username}"
@@ -80,18 +86,22 @@ class Loan(models.Model):
         Member,
         on_delete=models.PROTECT,
         related_name="loans",
+        verbose_name="student",
     )
     book = models.ForeignKey(
         Book,
         on_delete=models.PROTECT,
         related_name="loans",
+        verbose_name="title",
     )
-    borrowed_at = models.DateTimeField(default=timezone.now, editable=False)
-    due_date = models.DateField(editable=False)
-    returned_at = models.DateTimeField(null=True, blank=True)
+    borrowed_at = models.DateTimeField("borrowed on", default=timezone.now, editable=False)
+    due_date = models.DateField("due back", editable=False)
+    returned_at = models.DateTimeField("returned on", null=True, blank=True)
 
     class Meta:
         ordering = ("-borrowed_at", "-pk")
+        verbose_name = "borrowing"
+        verbose_name_plural = "borrowings"
         indexes = [
             models.Index(fields=("returned_at", "due_date"), name="loan_status_due_idx"),
             models.Index(fields=("member", "returned_at"), name="loan_member_status_idx"),

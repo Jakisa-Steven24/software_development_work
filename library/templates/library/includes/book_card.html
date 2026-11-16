@@ -1,18 +1,18 @@
 <article class="book-card">
-  <a class="book-cover {% if book.pk|divisibleby:3 %}cover--espresso{% elif book.pk|divisibleby:2 %}cover--tan{% endif %}" href="{% url 'book_detail' book.pk %}" aria-label="View {{ book.title }}">
-    <span class="cover-kicker">COMMUNITY SHELF</span>
+  <a class="book-cover {% if book.pk|divisibleby:3 %}cover--pine{% elif book.pk|divisibleby:2 %}cover--sea{% endif %}" href="{% url 'book_detail' book.pk %}" aria-label="View {{ book.title }}">
+    <span class="cover-kicker">{{ brand.institution|upper }}</span>
     <span class="cover-title">{{ book.title|truncatechars:48 }}</span>
-    <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-category">{{ book.genre|default:"Library edition" }}</span></span>
+    <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-category">{{ book.genre|default:"Library copy" }}</span></span>
   </a>
   <div class="book-card-body">
     <div class="book-card-heading">
       <h3><a href="{% url 'book_detail' book.pk %}">{{ book.title }}</a></h3>
       <span class="availability-pill {% if book.available_copies %}availability-pill--available{% else %}availability-pill--none{% endif %}">
-        {% if book.available_copies %}{{ book.available_copies }} available{% else %}On loan{% endif %}
+        {% if book.available_copies %}{{ book.available_copies }} on the shelf{% else %}All on loan{% endif %}
       </span>
     </div>
     {% with book.authors.all as authors %}
-      <p class="book-author">{% if authors %}{{ authors|join:", " }}{% else %}Author details coming soon{% endif %}</p>
+      <p class="book-author">{% if authors %}{{ authors|join:", " }}{% else %}Author details to follow{% endif %}</p>
     {% endwith %}
     <p class="book-meta">ISBN {{ book.isbn }}</p>
   </div>

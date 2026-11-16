@@ -1,4 +1,4 @@
-"""Settings for the Community Shelf library application."""
+"""Settings for the Hillcrest Shelf college library application."""
 import os
 from pathlib import Path
 
@@ -56,6 +56,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "library.context_processors.branding",
             ],
         },
     },

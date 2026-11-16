@@ -1,16 +1,16 @@
 {% extends "library/base.html" %}
 {% load humanize %}
-{% block title %}My loans{% endblock %}
+{% block title %}My borrowings{% endblock %}
 {% block content %}
 <div class="shell page-shell">
   <section class="page-intro page-intro--compact">
-    <div><p class="eyebrow">YOUR READING LIST</p><h1>My <em>loans.</em></h1><p>Keep track of what you have borrowed and when it is due back.</p></div>
-    {% if member %}<div class="member-chip"><span class="member-chip-mark" aria-hidden="true">CS</span><span><small>MEMBER NUMBER</small><strong>{{ member.membership_number }}</strong></span></div>{% endif %}
+    <div><p class="eyebrow">YOUR BORROWING RECORD</p><h1>My <em>borrowings.</em></h1><p>Check which titles you have out and when each copy is due back at the desk.</p></div>
+    {% if member %}<div class="member-chip"><span class="member-chip-mark" aria-hidden="true">{{ brand.monogram }}</span><span><small>STUDENT NUMBER</small><strong>{{ member.membership_number }}</strong></span></div>{% endif %}
   </section>
 
   {% if member %}
     <section class="loan-section">
-      <div class="section-heading section-heading--simple"><div><p class="eyebrow">CURRENTLY WITH YOU</p><h2>On loan <span class="count-badge">{{ active_loans|length }}</span></h2></div><span class="section-side-note">Return by your due date to avoid a fine.</span></div>
+      <div class="section-heading section-heading--simple"><div><p class="eyebrow">ON LOAN TO YOU</p><h2>In your bag <span class="count-badge">{{ active_loans|length }}</span></h2></div><span class="section-side-note">Return by the due date to avoid a fine.</span></div>
       {% if active_loans %}
         <div class="loan-list">
           {% for loan in active_loans %}
@@ -30,20 +30,20 @@
                 {% endif %}
                 <form method="post" action="{% url 'return_loan' loan.pk %}">
                   {% csrf_token %}
-                  <button class="button button--small {% if loan.is_overdue %}button--warning{% else %}button--outline{% endif %}" type="submit">Return this book</button>
+                  <button class="button button--small {% if loan.is_overdue %}button--warning{% else %}button--outline{% endif %}" type="submit">Mark as returned</button>
                 </form>
               </div>
             </article>
           {% endfor %}
         </div>
       {% else %}
-        <div class="empty-state empty-state--wide"><span class="empty-icon" aria-hidden="true">↗</span><div><h3>No books on loan right now.</h3><p>There are plenty of stories waiting for you on the shelves.</p></div><a class="button button--primary" href="{% url 'catalog' %}">Browse books</a></div>
+        <div class="empty-state empty-state--wide"><span class="empty-icon" aria-hidden="true">↗</span><div><h3>Nothing on loan right now.</h3><p>Your reading list is waiting for you in the catalogue.</p></div><a class="button button--primary" href="{% url 'catalog' %}">Search the catalogue</a></div>
       {% endif %}
     </section>
 
     {% if returned_loans %}
       <section class="loan-section loan-section--history">
-        <div class="section-heading section-heading--simple"><div><p class="eyebrow">BOOKS YOU HAVE SHARED BACK</p><h2>Return history</h2></div></div>
+        <div class="section-heading section-heading--simple"><div><p class="eyebrow">BACK ON THE SHELF</p><h2>Return history</h2></div></div>
         <div class="history-list">
           {% for loan in returned_loans %}
             <article class="history-row">
@@ -56,7 +56,7 @@
       </section>
     {% endif %}
   {% else %}
-    <div class="empty-state empty-state--wide"><span class="empty-icon" aria-hidden="true">♧</span><div><h2>Membership profile not found</h2><p>Ask library staff to connect your login to a membership number and phone number.</p></div></div>
+    <div class="empty-state empty-state--wide"><span class="empty-icon" aria-hidden="true">♧</span><div><h2>Student record not found</h2><p>Ask at the library desk to connect your college login to a student number and phone number.</p></div></div>
   {% endif %}
 </div>
 {% endblock %}

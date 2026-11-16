@@ -1,13 +1,13 @@
 {% extends "library/base.html" %}
-{% block title %}Member sign in{% endblock %}
+{% block title %}Student sign in{% endblock %}
 {% block content %}
 <div class="shell page-shell login-shell">
   <section class="login-card">
-    <div class="login-illustration" aria-hidden="true"><span class="login-illustration-mark">CS</span><div><b>Every good story<br>starts somewhere.</b><small>Welcome back to your library.</small></div></div>
+    <div class="login-illustration" aria-hidden="true"><span class="login-illustration-mark">{{ brand.monogram }}</span><div><b>Your reading starts<br>at the library door.</b><small>Welcome back to {{ brand.name }}.</small></div></div>
     <div class="login-form-wrap">
-      <p class="eyebrow">MEMBER ACCESS</p>
+      <p class="eyebrow">STUDENT ACCESS</p>
       <h1>Welcome <em>back.</em></h1>
-      <p class="login-intro">Sign in to borrow books and keep an eye on your due dates.</p>
+      <p class="login-intro">Sign in with your {{ brand.short_institution }} account to borrow from the catalogue and check your due dates.</p>
       <form method="post" class="auth-form">
         {% csrf_token %}
         {% if form.non_field_errors %}<div class="form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
@@ -24,7 +24,7 @@
         </div>
         <button class="button button--primary button--wide" type="submit">Sign in <span aria-hidden="true">→</span></button>
       </form>
-      <p class="login-help">Need an account? Library staff can set up your member login.</p>
+      <p class="login-help">No account yet? The library desk can set up your student login. {{ brand.desk_email }} · {{ brand.desk_hours }}</p>
     </div>
   </section>
 </div>

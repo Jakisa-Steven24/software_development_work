@@ -1,3 +1,4 @@
+"""Views for the Hillcrest Shelf borrowing register."""
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
@@ -92,7 +93,8 @@ def my_loans(request):
     if member is None:
         messages.info(
             request,
-            "Your account is not linked to a library membership yet. Please ask library staff for help.",
+            "Your account is not linked to a student library record yet. "
+            "Please ask at the library desk for help.",
         )
         active_loans = []
         returned_loans = []
@@ -115,7 +117,7 @@ def my_loans(request):
 @login_required
 @transaction.atomic
 def borrow_book(request, book_id):
-    """Create a loan only after locking and checking the member and stock rows."""
+    """Create a loan only after locking and checking the student and stock rows."""
     if request.method != "POST":
         return HttpResponseForbidden("Borrowing must be submitted using the protected form.")
 
@@ -124,23 +126,25 @@ def borrow_book(request, book_id):
     except Member.DoesNotExist:
         messages.error(
             request,
-            "Your account is not linked to a library membership. Please contact library staff.",
+            "Your account is not linked to a student library record. "
+            "Please contact the library desk.",
         )
         return redirect("book_detail", pk=book_id)
 
     try:
         book = Book.objects.select_for_update().get(pk=book_id)
     except Book.DoesNotExist as exc:
-        raise Http404("Book not found") from exc
+        raise Http404("Title not found") from exc
 
     active_count = member.loans.filter(returned_at__isnull=True).count()
     if active_count >= MAX_UNRETURNED_BOOKS:
         messages.error(
             request,
-            f"You already have {MAX_UNRETURNED_BOOKS} unreturned books. Return one before borrowing again.",
+            f"You already have {MAX_UNRETURNED_BOOKS} titles on loan. "
+            "Return one before borrowing another.",
         )
     elif book.available_copies < 1:
-        messages.error(request, "There are no available copies of this book right now.")
+        messages.error(request, "All copies of this title are on loan right now.")
     else:
         loan = Loan.objects.create(member=member, book=book)
         book.available_copies -= 1
@@ -156,17 +160,17 @@ def borrow_book(request, book_id):
 @login_required
 @transaction.atomic
 def return_loan(request, loan_id):
-    """Return a member's own loan (or any loan for a staff user) exactly once."""
+    """Return a student's own loan (or any loan for library staff) exactly once."""
     if request.method != "POST":
         return HttpResponseForbidden("Returns must be submitted using the protected form.")
 
     try:
         loan = Loan.objects.select_for_update().select_related("member").get(pk=loan_id)
     except Loan.DoesNotExist as exc:
-        raise Http404("Loan not found") from exc
+        raise Http404("Borrowing not found") from exc
 
     if loan.member.user_id != request.user.pk and not request.user.is_staff:
-        return HttpResponseForbidden("You can only return your own books.")
+        return HttpResponseForbidden("You can only return your own loans.")
 
     if loan.returned_at:
         messages.info(request, f"“{loan.book.title}” was already marked as returned.")
@@ -182,8 +186,8 @@ def return_loan(request, loan_id):
         if loan.fine_owed:
             messages.warning(
                 request,
-                f"“{book.title}” was returned {loan.overdue_days} day(s) late. "
-                f"Fine owed: UGX {loan.fine_owed:,}.",
+                f"“{book.title}” came back {loan.overdue_days} day(s) late. "
+                f"Fine accrued: UGX {loan.fine_owed:,}.",
             )
         else:
             messages.success(request, f"“{book.title}” has been returned. Thank you!")

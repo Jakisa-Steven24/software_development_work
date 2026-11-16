@@ -58,13 +58,13 @@ class ModelTests(TestCase):
         with self.assertRaises(Exception):
             book.full_clean()
 
-    def test_due_date_is_fourteen_days_after_borrow(self):
+    def test_due_date_is_twenty_one_days_after_borrow(self):
         member = make_member("alice", "M-001")
         book = make_book()
         loan = Loan.objects.create(member=member, book=book)
         expected = timezone.localtime(loan.borrowed_at).date() + timedelta(days=LOAN_PERIOD_DAYS)
         self.assertEqual(loan.due_date, expected)
-        self.assertEqual(LOAN_PERIOD_DAYS, 14)
+        self.assertEqual(LOAN_PERIOD_DAYS, 21)
 
     def test_overdue_days_and_fine(self):
         member = make_member("bob", "M-002")
@@ -74,7 +74,7 @@ class ModelTests(TestCase):
         loan.save(update_fields=("due_date",))
         self.assertEqual(loan.overdue_days, 4)
         self.assertEqual(loan.fine_owed, 4 * FINE_PER_DAY_UGX)
-        self.assertEqual(FINE_PER_DAY_UGX, 500)
+        self.assertEqual(FINE_PER_DAY_UGX, 1_000)
         self.assertTrue(loan.is_overdue)
 
     def test_returned_loan_is_not_overdue_and_fine_frozen(self):
@@ -93,7 +93,7 @@ class ModelTests(TestCase):
 class CatalogViewTests(TestCase):
     def setUp(self):
         self.book = make_book(
-            title="The Community Shelf",
+            title="The College Shelf",
             isbn="9780000000100",
             authors=[Author.objects.create(name="Nalwoga Sarah")],
         )
@@ -101,27 +101,27 @@ class CatalogViewTests(TestCase):
     def test_home_page_loads(self):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "The Community Shelf")
+        self.assertContains(response, "The College Shelf")
 
     def test_catalog_search_by_title(self):
-        response = self.client.get(reverse("catalog"), {"q": "community shelf"})
-        self.assertContains(response, "The Community Shelf")
+        response = self.client.get(reverse("catalog"), {"q": "college shelf"})
+        self.assertContains(response, "The College Shelf")
         response = self.client.get(reverse("catalog"), {"q": "nonexistent-title-xyz"})
-        self.assertNotContains(response, "The Community Shelf")
+        self.assertNotContains(response, "The College Shelf")
 
     def test_catalog_search_by_isbn(self):
         response = self.client.get(reverse("catalog"), {"q": "9780000000100"})
-        self.assertContains(response, "The Community Shelf")
+        self.assertContains(response, "The College Shelf")
 
     def test_catalog_search_by_author(self):
         response = self.client.get(reverse("catalog"), {"q": "Nalwoga"})
-        self.assertContains(response, "The Community Shelf")
+        self.assertContains(response, "The College Shelf")
 
     def test_catalog_availability_filter(self):
         self.book.available_copies = 0
         self.book.save()
         response = self.client.get(reverse("catalog"), {"availability": "available"})
-        self.assertNotContains(response, "The Community Shelf")
+        self.assertNotContains(response, "The College Shelf")
 
 
 class BorrowFlowTests(TestCase):
@@ -153,22 +153,22 @@ class BorrowFlowTests(TestCase):
         self.book.save()
         response = self.client.post(reverse("borrow_book", args=[self.book.pk]), follow=True)
         self.assertEqual(Loan.objects.count(), 0)
-        self.assertContains(response, "no available copies")
+        self.assertContains(response, "All copies of this title are on loan")
 
-    def test_borrow_limited_to_three_unreturned_books(self):
+    def test_borrow_limited_to_four_unreturned_titles(self):
         for index in range(MAX_UNRETURNED_BOOKS):
             extra = make_book(title=f"Extra {index}", isbn=f"97800000003{index:02d}")
             Loan.objects.create(member=self.member, book=extra)
         response = self.client.post(reverse("borrow_book", args=[self.book.pk]), follow=True)
         self.assertEqual(Loan.objects.filter(member=self.member).count(), MAX_UNRETURNED_BOOKS)
-        self.assertContains(response, "unreturned books")
+        self.assertContains(response, "titles on loan")
 
     def test_borrow_requires_membership(self):
         make_user("nomember", password="test-pass-123")
         self.client.login(username="nomember", password="test-pass-123")
         response = self.client.post(reverse("borrow_book", args=[self.book.pk]), follow=True)
         self.assertEqual(Loan.objects.count(), 0)
-        self.assertContains(response, "not linked to a library membership")
+        self.assertContains(response, "not linked to a student library record")
 
     def test_returned_loans_do_not_count_toward_limit(self):
         for index in range(MAX_UNRETURNED_BOOKS):
@@ -337,7 +337,7 @@ class StarterCatalogTests(TestCase):
 
     def test_home_has_two_letter_monogram_and_real_book_links(self):
         response = self.client.get(reverse("home"))
-        self.assertContains(response, '<span class="brand-mark" aria-hidden="true">CS</span>', count=2)
+        self.assertContains(response, '<span class="brand-mark" aria-hidden="true">HC</span>', count=2)
         self.assertContains(response, 'class="shelf-book"', count=3)
         self.assertNotContains(response, "✳")
         self.assertNotContains(response, "stack-book")
@@ -351,3 +351,26 @@ class StarterCatalogTests(TestCase):
         book.refresh_from_db()
         self.assertEqual(book.available_copies, 2)
         self.assertTrue(Loan.objects.filter(member=member, book=book).exists())
+
+
+class BrandingTests(TestCase):
+    """The institution's identity and policy should come from one source."""
+
+    def test_home_page_carries_the_institution_identity(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "Hillcrest Shelf")
+        self.assertContains(response, "Hillcrest College")
+        self.assertContains(response, "21-day loans")
+        self.assertContains(response, "4 titles at a time")
+
+    def test_stale_brand_is_not_rendered(self):
+        response = self.client.get(reverse("home"))
+        self.assertNotContains(response, "Community Shelf")
+
+    def test_borrowing_policy_is_advertised_consistently(self):
+        book = make_book(title="Policy Check", isbn="9780000000700")
+        member = make_member("policy-reader", "M-POLICY")
+        self.client.force_login(member.user)
+        response = self.client.get(reverse("book_detail", args=[book.pk]))
+        self.assertContains(response, f"Due {LOAN_PERIOD_DAYS} days after borrowing")
+        self.assertContains(response, f"Up to {MAX_UNRETURNED_BOOKS} titles at once")

@@ -4,6 +4,10 @@ from django.db.models import QuerySet
 
 from .models import Author, Book, Loan, Member
 
+admin.site.site_header = "Hillcrest Shelf · Library administration"
+admin.site.site_title = "Hillcrest Shelf"
+admin.site.index_title = "Library desk"
+
 
 class BookAdminForm(forms.ModelForm):
     """Default a new title's available stock to its total stock."""
@@ -58,7 +62,7 @@ class MemberAdmin(admin.ModelAdmin):
     list_select_related = ("user",)
     readonly_fields = ("joined_at",)
 
-    @admin.display(description="Member", ordering="user__last_name")
+    @admin.display(description="Student", ordering="user__last_name")
     def member_name(self, member):
         return member.user.get_full_name() or member.user.username
 
@@ -69,8 +73,8 @@ class ReturnStatusFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ("outstanding", "Not returned"),
-            ("returned", "Returned"),
+            ("outstanding", "Still on loan"),
+            ("returned", "Back on the shelf"),
         )
 
     def queryset(self, request, queryset: QuerySet):
@@ -105,7 +109,7 @@ class LoanAdmin(admin.ModelAdmin):
     date_hierarchy = "borrowed_at"
     ordering = ("due_date",)
 
-    @admin.display(description="Fine owed", ordering="due_date")
+    @admin.display(description="Fine accrued", ordering="due_date")
     def fine_owed_display(self, loan):
         return f"UGX {loan.fine_owed:,}"
 
