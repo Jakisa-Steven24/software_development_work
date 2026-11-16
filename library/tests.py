@@ -280,3 +280,74 @@ class AdminConfigurationTests(TestCase):
         request = self.client.get("/admin/").wsgi_request  # request is unused by both methods
         self.assertFalse(self.loan_admin.has_add_permission(request))
         self.assertFalse(self.loan_admin.has_delete_permission(request))
+
+
+class StarterCatalogTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from io import StringIO
+        from django.core.management import call_command
+
+        call_command("seed_catalog", stdout=StringIO())
+
+    def test_starter_collection_has_authors_summaries_and_stock(self):
+        self.assertEqual(Book.objects.count(), 9)
+        self.assertEqual(Author.objects.count(), 7)
+        for book in Book.objects.all():
+            self.assertTrue(book.authors.exists())
+            self.assertTrue(book.description)
+            self.assertTrue(book.genre)
+            self.assertEqual(book.total_copies, 3)
+            self.assertEqual(book.available_copies, 3)
+            book.full_clean()
+        self.assertEqual(Member.objects.count(), 0)
+        self.assertEqual(User.objects.count(), 0)
+        self.assertEqual(Loan.objects.count(), 0)
+
+    def test_rerun_preserves_catalogue_edits_and_borrowed_stock(self):
+        from io import StringIO
+        from django.core.management import call_command
+
+        book = Book.objects.get(title="Kintu")
+        book.title = "Kintu — library copy"
+        book.description = "Librarian's reading notes."
+        book.available_copies = 1
+        book.save()
+        author_ids = list(book.authors.values_list("pk", flat=True))
+        call_command("seed_catalog", stdout=StringIO())
+        book.refresh_from_db()
+        self.assertEqual(Book.objects.count(), 9)
+        self.assertEqual(Author.objects.count(), 7)
+        self.assertEqual(book.title, "Kintu — library copy")
+        self.assertEqual(book.description, "Librarian's reading notes.")
+        self.assertEqual(book.available_copies, 1)
+        self.assertEqual(list(book.authors.values_list("pk", flat=True)), author_ids)
+
+    def test_seeded_titles_are_searchable(self):
+        for query in ("Kintu", "Makumbi", "9781945492010"):
+            response = self.client.get(reverse("catalog"), {"q": query})
+            self.assertContains(response, "Kintu")
+
+    def test_book_detail_displays_summary_and_genre(self):
+        book = Book.objects.get(title="Kintu")
+        response = self.client.get(reverse("book_detail", args=[book.pk]))
+        self.assertContains(response, book.description)
+        self.assertContains(response, book.genre)
+        self.assertContains(response, "Jennifer Nansubuga Makumbi")
+
+    def test_home_has_two_letter_monogram_and_real_book_links(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, '<span class="brand-mark" aria-hidden="true">CS</span>', count=2)
+        self.assertContains(response, 'class="shelf-book"', count=3)
+        self.assertNotContains(response, "✳")
+        self.assertNotContains(response, "stack-book")
+
+    def test_starter_book_can_be_borrowed(self):
+        member = make_member("starter-reader", "M-STARTER")
+        self.client.force_login(member.user)
+        book = Book.objects.get(title="Kintu")
+        response = self.client.post(reverse("borrow_book", args=[book.pk]), follow=True)
+        self.assertContains(response, "You borrowed")
+        book.refresh_from_db()
+        self.assertEqual(book.available_copies, 2)
+        self.assertTrue(Loan.objects.filter(member=member, book=book).exists())

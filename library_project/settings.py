@@ -38,6 +38,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# Allow the embedded development preview only when explicitly requested.
+# Production keeps Django's clickjacking protection, even if this flag is set.
+if DEBUG and os.environ.get("DJANGO_PREVIEW_EMBED", "false").lower() == "true":
+    MIDDLEWARE.remove("django.middleware.clickjacking.XFrameOptionsMiddleware")
+
 ROOT_URLCONF = "library_project.urls"
 
 TEMPLATES = [

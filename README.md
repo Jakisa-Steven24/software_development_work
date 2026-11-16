@@ -36,6 +36,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 python manage.py migrate
+python manage.py seed_catalog      # optional starter collection: nine titles with authors and summaries
 python manage.py createsuperuser   # e.g. a "librarian" staff account
 python manage.py runserver
 ```
@@ -45,6 +46,19 @@ Open <http://127.0.0.1:8000/>.
 For a local demo you can sign in with a member account you create in the admin
 (**Library → Members**, link it to a user) or with the superuser itself.
 
+## Starter collection and appearance
+
+`python manage.py seed_catalog` adds nine books, including *Kintu*, *The First
+Woman* and *Things Fall Apart*, with authors, genres, summaries and three copies
+per title. These are starter inventory records: adjust the copy counts in the
+admin to match your physical shelves before opening borrowing to members.
+The command is safe to rerun: it matches ISBNs and never resets existing stock,
+overwrites catalogue edits, creates accounts or invents loan history.
+
+The interface uses a two-letter **CS** monogram, espresso and walnut brand colours,
+and CSS paper and bookcloth textures. Book covers are typographic library designs,
+not reproductions of publisher artwork. No external fonts or image services are needed.
+
 ## Running the checks and tests
 
 ```bash
@@ -52,7 +66,7 @@ python manage.py check
 python manage.py test
 ```
 
-The suite (28 tests) covers model invariants, the due-date/fine calculation, the
+The test suite covers model invariants, the due-date/fine calculation, the
 borrow/return flows (stock restoration, the 3-loan limit, idempotency), access control,
 and the admin configuration.
 
@@ -76,6 +90,7 @@ Settings are read from environment variables (with development defaults):
 |------------------------|--------------------------------------|------------------------|
 | `DJANGO_SECRET_KEY`    | insecure local-development default   | Set in production      |
 | `DJANGO_DEBUG`         | `true`                               | Set to `false` in production |
+| `DJANGO_PREVIEW_EMBED` | `false`                              | Allow iframe embedding for a local preview only when debug is enabled |
 | `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1,[::1],.e2b.app` | Comma-separated hosts  |
 
 `TIME_ZONE` is `Africa/Kampala`; `USE_TZ` is enabled.

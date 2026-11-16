@@ -1,8 +1,8 @@
 <article class="book-card">
-  <a class="book-cover" href="{% url 'book_detail' book.pk %}" aria-label="View {{ book.title }}">
+  <a class="book-cover {% if book.pk|divisibleby:3 %}cover--espresso{% elif book.pk|divisibleby:2 %}cover--tan{% endif %}" href="{% url 'book_detail' book.pk %}" aria-label="View {{ book.title }}">
     <span class="cover-kicker">COMMUNITY SHELF</span>
     <span class="cover-title">{{ book.title|truncatechars:48 }}</span>
-    <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-spark" aria-hidden="true">✳</span></span>
+    <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-category">{{ book.genre|default:"Library edition" }}</span></span>
   </a>
   <div class="book-card-body">
     <div class="book-card-heading">
