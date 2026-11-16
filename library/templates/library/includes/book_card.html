@@ -1,0 +1,19 @@
+<article class="book-card">
+  <a class="book-cover" href="{% url 'book_detail' book.pk %}" aria-label="View {{ book.title }}">
+    <span class="cover-kicker">COMMUNITY SHELF</span>
+    <span class="cover-title">{{ book.title|truncatechars:48 }}</span>
+    <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-spark" aria-hidden="true">✳</span></span>
+  </a>
+  <div class="book-card-body">
+    <div class="book-card-heading">
+      <h3><a href="{% url 'book_detail' book.pk %}">{{ book.title }}</a></h3>
+      <span class="availability-pill {% if book.available_copies %}availability-pill--available{% else %}availability-pill--none{% endif %}">
+        {% if book.available_copies %}{{ book.available_copies }} available{% else %}On loan{% endif %}
+      </span>
+    </div>
+    {% with book.authors.all as authors %}
+      <p class="book-author">{% if authors %}{{ authors|join:", " }}{% else %}Author details coming soon{% endif %}</p>
+    {% endwith %}
+    <p class="book-meta">ISBN {{ book.isbn }}</p>
+  </div>
+</article>

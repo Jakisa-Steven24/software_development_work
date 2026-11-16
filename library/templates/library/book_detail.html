@@ -1,0 +1,53 @@
+{% extends "library/base.html" %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<div class="shell page-shell">
+  <a class="back-link" href="{% url 'catalog' %}"><span aria-hidden="true">←</span> Back to the shelves</a>
+  <section class="book-detail">
+    <div class="detail-cover-wrap">
+      <div class="detail-cover" aria-label="Cover placeholder for {{ book.title }}">
+        <span class="cover-kicker">COMMUNITY SHELF</span>
+        <span class="detail-cover-title">{{ book.title }}</span>
+        <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-spark" aria-hidden="true">✳</span></span>
+      </div>
+      <p class="cover-caption">A story shared by the community</p>
+    </div>
+    <div class="detail-copy">
+      <p class="eyebrow">ON OUR SHELVES</p>
+      <h1>{{ book.title }}</h1>
+      <p class="detail-authors">{% with book.authors.all as authors %}{% if authors %}By {{ authors|join:", " }}{% else %}Author details coming soon{% endif %}{% endwith %}</p>
+      <p class="detail-note">Every borrowed book helps keep our shared shelf alive. Enjoy your read, then return it for the next curious mind.</p>
+      <div class="detail-facts">
+        <div><span>Publication year</span><strong>{{ book.publication_year }}</strong></div>
+        <div><span>ISBN</span><strong>{{ book.isbn }}</strong></div>
+        <div><span>Copies available</span><strong>{{ book.available_copies }} <small>of {{ book.total_copies }}</small></strong></div>
+      </div>
+      <div class="borrow-panel">
+        {% if book.available_copies %}
+          <span class="availability-dot"><i></i> Ready to borrow</span>
+        {% else %}
+          <span class="availability-dot availability-dot--out"><i></i> All copies are out</span>
+        {% endif %}
+        {% if user.is_authenticated %}
+          {% if not member %}
+            <p class="borrow-helper">Your login is not linked to a member profile yet. Please contact library staff.</p>
+          {% elif active_loan_count >= loan_limit %}
+            <p class="borrow-helper">You have {{ active_loan_count }} books on loan, the maximum of {{ loan_limit }}. Return one to borrow another.</p>
+          {% elif not book.available_copies %}
+            <p class="borrow-helper">Check back soon — this title will be ready when a copy is returned.</p>
+          {% else %}
+            <form method="post" action="{% url 'borrow_book' book.pk %}" class="borrow-form">
+              {% csrf_token %}
+              <button class="button button--primary button--wide" type="submit">Borrow this book <span aria-hidden="true">→</span></button>
+            </form>
+            <p class="borrow-helper">Due 14 days after borrowing · Up to {{ loan_limit }} books at once</p>
+          {% endif %}
+        {% else %}
+          <a class="button button--primary button--wide" href="{% url 'login' %}?next={{ request.path|urlencode }}">Sign in to borrow <span aria-hidden="true">→</span></a>
+          <p class="borrow-helper">Library membership is required to borrow.</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
