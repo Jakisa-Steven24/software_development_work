@@ -16,11 +16,19 @@
       <label class="sr-only" for="book-search">Search by title, author, or ISBN</label>
       <span class="search-icon" aria-hidden="true">⌕</span>
       <input id="book-search" name="q" type="search" placeholder="Search title, author or ISBN" value="{{ query }}">
+      <label class="sr-only" for="genre-filter">Genre</label>
+      <select id="genre-filter" name="genre">
+        <option value="">All genres</option>
+        {% for g in genres %}
+          <option value="{{ g }}" {% if g == genre %}selected{% endif %}>{{ g }}</option>
+        {% endfor %}
+      </select>
       <label class="sr-only" for="availability-filter">Availability</label>
       <select id="availability-filter" name="availability">
         <option value="all" {% if availability != 'available' %}selected{% endif %}>All books</option>
         <option value="available" {% if availability == 'available' %}selected{% endif %}>Available now</option>
       </select>
+      <label class="staff-pick-check"><input type="checkbox" name="staff_picks" value="1" {% if staff_picks_only %}checked{% endif %}> Staff picks</label>
       <button class="button button--primary" type="submit">Search <span aria-hidden="true">→</span></button>
     </form>
     <p class="result-count">{{ result_count }} title{{ result_count|pluralize }} on the shelf</p>
@@ -32,9 +40,9 @@
     </section>
     {% if page_obj.has_other_pages %}
       <nav class="pagination" aria-label="Book pages">
-        {% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;availability={{ availability|urlencode }}&amp;page={{ page_obj.previous_page_number }}" rel="prev">← Previous</a>{% else %}<span class="pagination-muted">← Previous</span>{% endif %}
+        {% if page_obj.has_previous %}<a href="?q={{ query|urlencode }}&amp;availability={{ availability|urlencode }}&amp;genre={{ genre|urlencode }}{% if staff_picks_only %}&amp;staff_picks=1{% endif %}&amp;page={{ page_obj.previous_page_number }}" rel="prev">← Previous</a>{% else %}<span class="pagination-muted">← Previous</span>{% endif %}
         <span>Page <strong>{{ page_obj.number }}</strong> of {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;availability={{ availability|urlencode }}&amp;page={{ page_obj.next_page_number }}" rel="next">Next →</a>{% else %}<span class="pagination-muted">Next →</span>{% endif %}
+        {% if page_obj.has_next %}<a href="?q={{ query|urlencode }}&amp;availability={{ availability|urlencode }}&amp;genre={{ genre|urlencode }}{% if staff_picks_only %}&amp;staff_picks=1{% endif %}&amp;page={{ page_obj.next_page_number }}" rel="next">Next →</a>{% else %}<span class="pagination-muted">Next →</span>{% endif %}
       </nav>
     {% endif %}
   {% else %}

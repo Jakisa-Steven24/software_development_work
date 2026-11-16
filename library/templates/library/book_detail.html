@@ -6,6 +6,7 @@
   <section class="book-detail">
     <div class="detail-cover-wrap">
       <div class="detail-cover {% if book.pk|divisibleby:3 %}cover--espresso{% elif book.pk|divisibleby:2 %}cover--tan{% endif %}" aria-label="Library edition of {{ book.title }}">
+        {% if book.staff_pick %}<span class="staff-pick-ribbon staff-pick-ribbon--large">Staff pick</span>{% endif %}
         <span class="cover-kicker">COMMUNITY SHELF</span>
         <span class="detail-cover-title">{{ book.title }}</span>
         <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-category">{{ book.genre|default:"Library edition" }}</span></span>
@@ -13,9 +14,13 @@
       <p class="cover-caption">A story shared by the community</p>
     </div>
     <div class="detail-copy">
-      <p class="eyebrow">ON OUR SHELVES</p>
+      <div class="detail-eyebrow-row">
+        <p class="eyebrow">ON OUR SHELVES</p>
+        {% if book.staff_pick %}<span class="staff-pick-chip"><span aria-hidden="true">◆</span> Staff pick</span>{% endif %}
+      </div>
       <h1>{{ book.title }}</h1>
       <p class="detail-authors">{% with book.authors.all as authors %}{% if authors %}By {{ authors|join:", " }}{% else %}Author details coming soon{% endif %}{% endwith %}</p>
+      <p class="card-rating card-rating--detail">{% include "library/includes/stars.html" with avg=book.avg_rating count=book.review_count %}</p>
       <p class="detail-note">{{ book.description|default:"Borrow this title for 14 days. Please return it on time for the next reader." }}</p>
       <div class="detail-facts">
         <div><span>Publication year</span><strong>{{ book.publication_year }}</strong></div>
@@ -42,11 +47,79 @@
             </form>
             <p class="borrow-helper">Due 14 days after borrowing · Up to {{ loan_limit }} books at once</p>
           {% endif %}
+          <form method="post" action="{% url 'toggle_reading_list' book.pk %}?next={{ request.path|urlencode }}" class="shelf-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <button class="button button--small {% if saved_to_shelf %}button--primary{% else %}button--outline{% endif %}" type="submit">
+              {% if saved_to_shelf %}✓ On your shelf{% else %}+ Save to your shelf{% endif %}
+            </button>
+          </form>
         {% else %}
           <a class="button button--primary button--wide" href="{% url 'login' %}?next={{ request.path|urlencode }}">Sign in to borrow <span aria-hidden="true">→</span></a>
-          <p class="borrow-helper">Library membership is required to borrow.</p>
+          <p class="borrow-helper">Library membership is required to borrow. <a class="text-link" href="{% url 'signup' %}">New here? Sign up free</a></p>
         {% endif %}
       </div>
+    </div>
+  </section>
+
+  <section class="reviews-section" aria-labelledby="reviews-heading">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">READER REVIEWS</p>
+        <h2 id="reviews-heading">What readers say {% if book.review_count %}<span class="count-badge">{{ book.review_count }}</span>{% endif %}</h2>
+      </div>
+      {% if book.review_count %}<p class="reviews-average"><strong>{{ book.avg_rating|floatformat:1 }}</strong><span class="reviews-average-stars" aria-hidden="true">{% include "library/includes/stars.html" with avg=book.avg_rating count=book.review_count %}</span></p>{% endif %}
+    </div>
+    <div class="reviews-layout">
+      <div class="review-list">
+        {% for review in reviews %}
+          <article class="review-card">
+            <div class="review-head">
+              <span class="review-avatar" aria-hidden="true">{{ review.member.user.first_name|first|upper|default:review.member.user.username|first|upper }}</span>
+              <div class="review-who">
+                <strong>{{ review.member.user.get_full_name|default:review.member.user.username }}</strong>
+                <span class="review-meta">{{ review.created_at|date:"j M Y" }}{% if review.updated_at|date:"U" != review.created_at|date:"U" %} (edited){% endif %}</span>
+              </div>
+              <span class="review-rating" aria-label="Rated {{ review.rating }} out of 5">{{ review.rating }}<i aria-hidden="true">★</i></span>
+              {% if user.is_authenticated %}{% if user.is_staff or review.member.user_id == user.pk %}
+                <form method="post" action="{% url 'delete_review' review.pk %}" class="review-delete-form">
+                  {% csrf_token %}
+                  <button class="review-delete" type="submit" aria-label="Delete review">Delete</button>
+                </form>
+              {% endif %}{% endif %}
+            </div>
+            {% if review.comment %}<p class="review-comment">{{ review.comment }}</p>{% endif %}
+          </article>
+        {% empty %}
+          <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">★</span>
+            <div><h3>Be the first to review this book.</h3><p>Have you read it? Share a few words to help the next reader decide.</p></div>
+          </div>
+        {% endfor %}
+      </div>
+      <aside class="review-form-wrap">
+        {% if user.is_authenticated %}
+          {% if member %}
+            <form method="post" action="{% url 'post_review' book.pk %}" class="review-form">
+              {% csrf_token %}
+              <h3>{% if member_review %}Your review{% else %}Write a review{% endif %}</h3>
+              <div class="form-field">
+                <label for="{{ review_form.rating.id_for_label }}">Your rating</label>
+                {{ review_form.rating }}
+              </div>
+              <div class="form-field">
+                <label for="{{ review_form.comment.id_for_label }}">Your thoughts <span class="label-optional">(optional)</span></label>
+                {{ review_form.comment }}
+              </div>
+              <button class="button button--primary button--small" type="submit">{% if member_review %}Update review{% else %}Post review{% endif %}</button>
+            </form>
+          {% else %}
+            <p class="borrow-helper">Only members can review books. Ask library staff to link your account to a membership.</p>
+          {% endif %}
+        {% else %}
+          <a class="button button--outline button--small" href="{% url 'login' %}?next={{ request.path|urlencode }}">Sign in to write a review</a>
+        {% endif %}
+      </aside>
     </div>
   </section>
 </div>

@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.db.models import QuerySet
 
-from .models import Author, Book, Loan, Member
+from .models import Author, Book, Loan, Member, Review
 
 
 class BookAdminForm(forms.ModelForm):
@@ -38,11 +38,20 @@ class AuthorAdmin(admin.ModelAdmin):
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
     form = BookAdminForm
-    list_display = ("title", "isbn", "publication_year", "total_copies", "available_copies")
-    list_filter = ("genre", "publication_year", "authors")
+    list_display = ("title", "isbn", "publication_year", "total_copies", "available_copies", "staff_pick")
+    list_filter = ("genre", "publication_year", "authors", "staff_pick")
+    actions = ("make_staff_pick", "remove_staff_pick")
     search_fields = ("title", "isbn")
     filter_horizontal = ("authors",)
     ordering = ("title",)
+
+    @admin.action(description="Mark as staff pick")
+    def make_staff_pick(self, request, queryset):
+        queryset.update(staff_pick=True)
+
+    @admin.action(description="Remove staff pick")
+    def remove_staff_pick(self, request, queryset):
+        queryset.update(staff_pick=False)
 
 
 @admin.register(Member)
@@ -116,3 +125,17 @@ class LoanAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Preserve the circulation history and avoid silently changing stock.
         return False
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ("book", "member", "rating", "created_at")
+    list_filter = ("rating",)
+    search_fields = (
+        "book__title",
+        "book__isbn",
+        "member__membership_number",
+        "member__user__username",
+    )
+    list_select_related = ("book", "member", "member__user")
+    readonly_fields = ("created_at", "updated_at")

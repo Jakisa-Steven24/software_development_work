@@ -1,4 +1,4 @@
-/* Community Shelf: espresso, walnut, tobacco and uncoated paper. */
+/* Community Shelf: solid shades of brown — espresso, walnut, tobacco and sand. No textures. */
 
 :root {
   --brown-950: #291b15;
@@ -40,10 +40,7 @@ body {
   font-size: 16px;
   line-height: 1.55;
   color: var(--ink);
-  background:
-    repeating-linear-gradient(0deg, transparent 0 3px, rgba(90, 61, 38, 0.025) 3px 4px),
-    repeating-linear-gradient(90deg, transparent 0 5px, rgba(90, 61, 38, 0.025) 5px 6px),
-    var(--cream);
+  background: var(--cream);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -171,7 +168,7 @@ img, svg { max-width: 100%; }
 .hero {
   position: relative; overflow: hidden;
   display: grid; grid-template-columns: 1.05fr 1fr; gap: 2rem;
-  background: repeating-linear-gradient(92deg, transparent 0 7px, #ffffff03 7px 8px), linear-gradient(155deg, var(--brown-800), var(--brown-950));
+  background: var(--brown-900);
   border-radius: var(--radius-lg);
   padding: clamp(2rem, 5vw, 4rem);
   color: var(--cream);
@@ -195,7 +192,7 @@ img, svg { max-width: 100%; }
 .hero-art { display: flex; align-items: center; justify-content: center; min-width: 0; }
 .reading-shelf { width: 100%; border-bottom: 9px solid #9a7050; padding: 1rem 0 0; box-shadow: 0 12px 10px -10px #1e130d; }
 .shelf-label { display: block; color: var(--sand); font-size: .65rem; letter-spacing: .2em; margin-bottom: 1.5rem; }
-.shelf-book { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; margin: 0 .5rem .35rem; min-height: 80px; color: #fff5e5; text-decoration: none; border-radius: 3px 7px 7px 3px; border-left: 10px solid rgba(0,0,0,.2); background: repeating-linear-gradient(0deg, transparent 0 2px, #ffffff08 2px 3px), #795239; box-shadow: 2px 4px 5px #1e130d60; }
+.shelf-book { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; margin: 0 .5rem .35rem; min-height: 80px; color: #fff5e5; text-decoration: none; border-radius: 3px 7px 7px 3px; border-left: 10px solid rgba(0,0,0,.2); background: #795239; box-shadow: 2px 4px 5px rgba(30, 19, 13, 0.38); }
 .shelf-book:nth-of-type(2) { background-color: #a47750; margin-left: 1.2rem; }
 .shelf-book:nth-of-type(3) { background-color: #5b3c2b; margin-right: 1.2rem; }
 .shelf-book strong { font: 1.25rem var(--serif); }
@@ -241,10 +238,7 @@ img, svg { max-width: 100%; }
 .book-cover {
   display: flex; flex-direction: column; justify-content: space-between;
   min-height: 168px; padding: 0.9rem 1rem; text-decoration: none;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.08), transparent 40%),
-    repeating-linear-gradient(-45deg, transparent 0 14px, rgba(255, 255, 255, 0.04) 14px 15px),
-    linear-gradient(155deg, var(--brown-700), var(--brown-900));
+  background: var(--brown-700);
   color: var(--cream); border-bottom: 4px solid var(--sand);
 }
 .cover-kicker { font-size: 0.55rem; letter-spacing: 0.24em; font-weight: 800; color: var(--sand); }
@@ -314,10 +308,7 @@ img, svg { max-width: 100%; }
 .detail-cover {
   display: flex; flex-direction: column; justify-content: space-between;
   min-height: 430px; border-radius: var(--radius-md); padding: 1.5rem;
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.1), transparent 45%),
-    repeating-linear-gradient(-45deg, transparent 0 18px, rgba(255, 255, 255, 0.05) 18px 19px),
-    linear-gradient(155deg, var(--brown-700), var(--brown-950));
+  background: var(--brown-800);
   border-bottom: 6px solid var(--sand); box-shadow: var(--shadow-lg);
 }
 .detail-cover-title { font-family: var(--serif); font-size: clamp(1.6rem, 2.6vw, 2.3rem); line-height: 1.18; color: var(--paper); }
@@ -365,7 +356,7 @@ img, svg { max-width: 100%; }
 .loan-card--late { border-left-color: var(--danger); background: #fffdf8; }
 .loan-book-mark {
   flex-shrink: 0; width: 54px; height: 68px; border-radius: 6px;
-  background: linear-gradient(160deg, var(--brown-700), var(--brown-900)); color: var(--sand);
+  background: var(--brown-800); color: var(--sand);
   font-family: var(--serif); font-size: 1.6rem; display: flex; align-items: center; justify-content: center;
   box-shadow: inset -3px 0 0 rgba(0, 0, 0, 0.25);
 }
@@ -456,7 +447,7 @@ img, svg { max-width: 100%; }
   border: 1px solid var(--paper-edge);
 }
 .login-illustration {
-  background: linear-gradient(165deg, var(--brown-800), var(--brown-950));
+  background: var(--brown-900);
   display: flex; flex-direction: column; justify-content: space-between; padding: 1.75rem; color: var(--cream);
 }
 .login-illustration-mark { font-size: 2rem; color: var(--sand); }
@@ -486,6 +477,139 @@ img, svg { max-width: 100%; }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.5rem 0; flex-wrap: wrap; }
 .footer-inner p { margin: 0; font-size: 0.88rem; max-width: 34rem; }
 .footer-note { font-family: var(--serif); font-style: italic; color: var(--sand); font-size: 0.85rem; }
+
+
+/* ---------------- Sign up & sand buttons ---------------- */
+
+.button--sand { background: var(--sand); border-color: #b89a6c; color: var(--brown-950); box-shadow: 0 3px 0 #b89a6c; }
+.button--sand:hover { background: #e8cda4; }
+.footer-join { color: var(--sand); font-weight: 700; text-decoration: none; font-size: 0.9rem; }
+.footer-join:hover { text-decoration: underline; }
+
+/* ---------------- Star ratings ---------------- */
+
+.stars { position: relative; display: inline-block; font-size: 0.95rem; line-height: 1; letter-spacing: 0.1em; }
+.stars-base { color: #ddcfbd; }
+.stars-fill { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; white-space: nowrap; color: #b98c4a; }
+.rating-count { font-size: 0.78rem; color: var(--ink-soft); }
+.rating-count--none { font-size: 0.76rem; color: var(--taupe); font-style: italic; }
+.card-rating { margin: 0.1rem 0 0.2rem; display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+.card-rating--detail { margin: 0 0 1.1rem; }
+.card-rating--detail .stars { font-size: 1.15rem; }
+.card-rating--detail .rating-count { font-size: 0.85rem; }
+
+/* ---------------- Staff picks ---------------- */
+
+.book-cover, .detail-cover { position: relative; }
+.staff-pick-ribbon {
+  position: absolute; top: 0.7rem; right: 0.7rem; z-index: 1;
+  background: var(--sand); color: var(--brown-950);
+  font-size: 0.56rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 0.3rem 0.55rem; border-radius: 5px;
+}
+.staff-pick-ribbon--large { font-size: 0.66rem; padding: 0.38rem 0.75rem; }
+.staff-pick-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: var(--sand-soft); color: #8a5a12; border: 1px solid var(--sand);
+  border-radius: 999px; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; padding: 0.3rem 0.7rem;
+}
+.staff-pick-check {
+  display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700;
+  color: var(--ink); background: var(--cream); padding: 0.55rem 0.8rem; border-radius: 999px;
+  cursor: pointer; border: 1px solid var(--paper-edge); white-space: nowrap;
+}
+.staff-pick-check input { accent-color: var(--copper); width: 1rem; height: 1rem; cursor: pointer; }
+.detail-eyebrow-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.detail-eyebrow-row .eyebrow { margin-bottom: 0; }
+
+/* ---------------- Reviews ---------------- */
+
+.reviews-section { margin-top: 2.5rem; }
+.reviews-average {
+  display: flex; align-items: center; gap: 0.75rem; margin: 0;
+  background: var(--paper); border: 1px solid var(--paper-edge); border-radius: var(--radius-md);
+  padding: 0.6rem 1.1rem; box-shadow: var(--shadow-sm);
+}
+.reviews-average strong { font-family: var(--serif); font-size: 1.6rem; color: var(--brown-900); }
+.reviews-average-stars .rating-count { display: none; }
+.reviews-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; align-items: start; }
+.review-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.review-card { background: var(--paper); border: 1px solid var(--paper-edge); border-radius: var(--radius-md); padding: 0.85rem 1rem; box-shadow: var(--shadow-sm); }
+.review-head { display: flex; align-items: center; gap: 0.7rem; }
+.review-avatar {
+  width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--brown-800); color: var(--sand);
+  display: flex; align-items: center; justify-content: center; font-weight: 800; font-family: var(--serif); flex-shrink: 0;
+}
+.review-who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.review-who strong { font-size: 0.9rem; color: var(--brown-900); }
+.review-meta { font-size: 0.72rem; color: var(--ink-soft); }
+.review-rating { font-weight: 800; color: var(--brown-900); background: var(--sand-soft); border-radius: 999px; padding: 0.22rem 0.6rem; font-size: 0.82rem; white-space: nowrap; }
+.review-rating i { color: var(--copper); font-style: normal; margin-left: 0.15rem; }
+.review-delete-form { margin: 0; }
+.review-delete { background: none; border: none; color: var(--taupe); font-size: 0.72rem; font-weight: 700; cursor: pointer; padding: 0.3rem 0.5rem; border-radius: 6px; }
+.review-delete:hover { color: var(--danger); background: var(--danger-soft); }
+.review-comment { margin: 0.55rem 0 0; font-size: 0.92rem; color: var(--ink); }
+.review-form-wrap {
+  background: var(--paper); border: 1px solid var(--paper-edge); border-radius: var(--radius-md);
+  padding: 1rem 1.1rem; box-shadow: var(--shadow-sm); position: sticky; top: 90px;
+}
+.review-form { display: flex; flex-direction: column; gap: 0.8rem; }
+.review-form h3 { font-family: var(--serif); margin: 0; color: var(--brown-900); font-size: 1.1rem; }
+.form-field select, .form-field textarea {
+  border: 1px solid var(--paper-edge); background: var(--cream); border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem; font-size: 0.95rem; outline: none; font-family: var(--sans);
+  transition: border-color .15s ease, box-shadow .15s ease; color: var(--ink);
+}
+.form-field select:focus, .form-field textarea:focus { border-color: var(--sand); box-shadow: 0 0 0 3px rgba(218, 185, 139, 0.35); background: #fff; }
+
+/* ---------------- Sign up form rows ---------------- */
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+.form-help { font-size: 0.72rem; color: var(--ink-soft); }
+.label-optional { font-weight: 400; color: var(--taupe); font-size: 0.85em; }
+
+/* ---------------- Member stats & badges ---------------- */
+
+.member-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+.member-stat {
+  background: var(--paper); border: 1px solid var(--paper-edge); border-radius: var(--radius-md);
+  padding: 0.8rem 1rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 0.2rem;
+}
+.member-stat-number { font-family: var(--serif); font-size: 1.9rem; color: var(--brown-900); line-height: 1; }
+.member-stat-label { font-size: 0.74rem; color: var(--ink-soft); letter-spacing: 0.03em; }
+
+.badge-block { margin-bottom: 1.75rem; }
+.badge-row { display: flex; flex-wrap: wrap; gap: 0.6rem; list-style: none; margin: 0; padding: 0; }
+.badge {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem;
+  width: 10.75rem; padding: 0.7rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--paper-edge);
+  background: var(--paper);
+}
+.badge--earned { border-color: var(--sand); box-shadow: var(--shadow-sm); }
+.badge--locked { background: #efe8da; border-style: dashed; }
+.badge-glyph {
+  width: 2.1em; height: 2.1em; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 10px; font-size: 1.05rem; background: var(--paper-edge); color: var(--taupe); margin-bottom: 0.15rem;
+}
+.badge--earned .badge-glyph { background: var(--brown-900); color: var(--sand); }
+.badge-name { font-weight: 800; font-size: 0.82rem; color: var(--brown-900); }
+.badge-desc { font-size: 0.68rem; color: var(--ink-soft); line-height: 1.35; }
+.badge--locked .badge-name { color: var(--taupe); }
+.badge--locked .badge-desc { color: #9a8b7c; }
+
+/* ---------------- Loan renewal & shelf ---------------- */
+
+.loan-actions { display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.renewal-used { font-size: 0.68rem; font-weight: 800; color: var(--taupe); letter-spacing: 0.08em; text-transform: uppercase; }
+.shelf-link { display: inline-block; margin-top: 0.6rem; }
+.shelf-form { margin-top: 0.8rem; }
+.shelf-hint { margin: 1rem 0.2rem 0; font-size: 0.82rem; color: var(--ink-soft); }
+
+/* ---------------- Staff due-soon panel ---------------- */
+
+.due-soon-panel { margin-top: 1.25rem; }
+.late-badge--soft { background: var(--sand-soft); color: #8a5a12; }
 
 /* ---------------- Responsive ---------------- */
 
@@ -534,17 +658,33 @@ img, svg { max-width: 100%; }
 
 /* Cloth-bound covers, walnut panels and paper retain their own surface. */
 .book-cover, .detail-cover {
-  background: repeating-linear-gradient(0deg, transparent 0 2px, #ffffff09 2px 3px),
-    repeating-linear-gradient(90deg, transparent 0 3px, #0000000a 3px 4px), #684932;
-  border-left: 8px solid #00000020;
+  background: #684932;
+  border-left: 8px solid rgba(0, 0, 0, 0.13);
 }
 .cover--tan { background-color: #93643f; }
 .cover--espresso { background-color: #453026; }
 .how-it-works, .login-illustration {
-  background-image: repeating-linear-gradient(95deg, transparent 0 12px, #ffffff03 12px 14px);
-  background-color: var(--brown-950);
+  background: var(--brown-950);
 }
 .book-grid--featured { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 [hidden] { display: none !important; }
 @media (max-width: 860px) { .book-grid--featured { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .book-grid--featured { grid-template-columns: 1fr; } .shelf-book { padding: 1rem; } }
+
+@media (max-width: 1024px) {
+  .reviews-layout { grid-template-columns: 1fr; }
+  .review-form-wrap { position: static; }
+  .member-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 860px) {
+  .shelf-book:nth-of-type(2), .shelf-book:nth-of-type(3) { margin-left: 0; margin-right: 0; }
+  .loan-actions { justify-content: flex-start; width: 100%; }
+}
+
+@media (max-width: 560px) {
+  .form-row { grid-template-columns: 1fr; }
+  .member-stats { grid-template-columns: repeat(2, 1fr); }
+  .badge { width: calc(50% - 0.3rem); }
+  .reviews-average { flex-wrap: wrap; }
+}

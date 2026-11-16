@@ -351,3 +351,258 @@ class StarterCatalogTests(TestCase):
         book.refresh_from_db()
         self.assertEqual(book.available_copies, 2)
         self.assertTrue(Loan.objects.filter(member=member, book=book).exists())
+
+
+class SignUpTests(TestCase):
+    def test_signup_page_loads_with_button_friendly_copy(self):
+        response = self.client.get(reverse("signup"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Create your")
+        self.assertContains(response, "phone")
+
+    def test_signup_creates_user_membership_and_logs_in(self):
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "first_name": "Nakato",
+                "last_name": "Peace",
+                "username": "nakato",
+                "email": "nakato@example.com",
+                "phone_number": "+256 701 234 567",
+                "password1": "read-with-me-2026",
+                "password2": "read-with-me-2026",
+            },
+            follow=True,
+        )
+        self.assertRedirects(response, reverse("home"))
+        user = User.objects.get(username="nakato")
+        member = Member.objects.get(user=user)
+        self.assertTrue(member.membership_number.startswith("CS-"))
+        self.assertEqual(member.phone_number, "+256 701 234 567")
+        self.assertContains(response, "Welcome to Community Shelf")
+        # The new member is signed in straight away and can reach the member area.
+        response = self.client.get(reverse("my_loans"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_signup_rejects_weak_or_mismatched_password(self):
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "first_name": "Test",
+                "username": "badpass",
+                "phone_number": "+256 700 000 000",
+                "password1": "12345678",
+                "password2": "87654321",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username="badpass").exists())
+
+    def test_signup_rejects_invalid_phone(self):
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "first_name": "Test",
+                "username": "badphone",
+                "phone_number": "not-a-phone",
+                "password1": "read-with-me-2026",
+                "password2": "read-with-me-2026",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(username="badphone").exists())
+
+    def test_signup_button_appears_in_header_for_anonymous_users(self):
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, ">Sign up<")
+        self.assertContains(response, reverse("signup"))
+
+
+class ReviewTests(TestCase):
+    def setUp(self):
+        self.member = make_member("reviewer", "M-200")
+        self.book = make_book(title="Reviewable", isbn="9780000000300")
+        self.client.force_login(self.member.user)
+
+    def test_member_can_post_a_review(self):
+        response = self.client.post(
+            reverse("post_review", args=[self.book.pk]),
+            {"rating": "5", "comment": "A beautiful story."},
+            follow=True,
+        )
+        self.assertContains(response, "Your review of")
+        review = self.book.reviews.get(member=self.member)
+        self.assertEqual(review.rating, 5)
+        self.assertEqual(review.comment, "A beautiful story.")
+
+    def test_review_is_one_per_member_and_updates_in_place(self):
+        for rating in ("2", "4"):
+            self.client.post(
+                reverse("post_review", args=[self.book.pk]),
+                {"rating": rating, "comment": "Changed my mind."},
+            )
+        self.assertEqual(self.book.reviews.count(), 1)
+        self.assertEqual(self.book.reviews.get().rating, 4)
+
+    def test_average_rating_is_shown_on_book_detail(self):
+        self.client.post(
+            reverse("post_review", args=[self.book.pk]),
+            {"rating": "4", "comment": "Solid read."},
+        )
+        response = self.client.get(reverse("book_detail", args=[self.book.pk]))
+        self.assertContains(response, "4.0")
+        self.assertContains(response, "Solid read.")
+
+    def test_invalid_rating_is_rejected(self):
+        response = self.client.post(
+            reverse("post_review", args=[self.book.pk]),
+            {"rating": "9", "comment": "Off the scale."},
+            follow=True,
+        )
+        self.assertContains(response, "between 1 and 5")
+        self.assertEqual(self.book.reviews.count(), 0)
+
+    def test_member_can_delete_own_review(self):
+        self.client.post(
+            reverse("post_review", args=[self.book.pk]),
+            {"rating": "3", "comment": "It was okay."},
+        )
+        review = self.book.reviews.get()
+        self.client.post(reverse("delete_review", args=[review.pk]))
+        self.assertEqual(self.book.reviews.count(), 0)
+
+    def test_other_member_cannot_delete_my_review(self):
+        self.client.post(
+            reverse("post_review", args=[self.book.pk]),
+            {"rating": "3", "comment": "Keep this one."},
+        )
+        review = self.book.reviews.get()
+        other = make_member("intruder", "M-201")
+        self.client.force_login(other.user)
+        response = self.client.post(reverse("delete_review", args=[review.pk]))
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.book.reviews.count(), 1)
+
+    def test_review_form_requires_membership(self):
+        plain_user = make_user("plainuser")
+        self.client.force_login(plain_user)
+        response = self.client.post(
+            reverse("post_review", args=[self.book.pk]),
+            {"rating": "5", "comment": "Hi"},
+            follow=True,
+        )
+        self.assertContains(response, "Only library members can review")
+
+
+class RenewalTests(TestCase):
+    def setUp(self):
+        self.member = make_member("renewer", "M-300")
+        self.book = make_book(title="Renewable", isbn="9780000000400", total=1)
+        self.client.force_login(self.member.user)
+        self.client.post(reverse("borrow_book", args=[self.book.pk]))
+        self.loan = Loan.objects.get(member=self.member, book=self.book)
+
+    def test_renewal_extends_due_date_by_fourteen_days(self):
+        original_due = self.loan.due_date
+        response = self.client.post(reverse("renew_loan", args=[self.loan.pk]), follow=True)
+        self.loan.refresh_from_db()
+        self.assertEqual(self.loan.due_date, original_due + timedelta(days=LOAN_PERIOD_DAYS))
+        self.assertEqual(self.loan.renewed_count, 1)
+        self.assertIsNotNone(self.loan.renewed_at)
+        self.assertContains(response, "renewed")
+
+    def test_only_one_renewal_is_allowed(self):
+        self.client.post(reverse("renew_loan", args=[self.loan.pk]))
+        self.loan.refresh_from_db()
+        original_due = self.loan.due_date
+        response = self.client.post(reverse("renew_loan", args=[self.loan.pk]), follow=True)
+        self.loan.refresh_from_db()
+        self.assertEqual(self.loan.due_date, original_due)
+        self.assertEqual(self.loan.renewed_count, 1)
+        self.assertContains(response, "one renewal")
+
+    def test_overdue_loan_cannot_be_renewed(self):
+        self.loan.due_date = timezone.localdate() - timedelta(days=1)
+        self.loan.save(update_fields=("due_date",))
+        response = self.client.post(reverse("renew_loan", args=[self.loan.pk]), follow=True)
+        self.loan.refresh_from_db()
+        self.assertEqual(self.loan.renewed_count, 0)
+        self.assertContains(response, "cannot be renewed")
+
+    def test_renewal_renews_own_loans_only(self):
+        other = make_member("someoneelse", "M-301")
+        self.client.force_login(other.user)
+        response = self.client.post(reverse("renew_loan", args=[self.loan.pk]))
+        self.assertEqual(response.status_code, 403)
+
+
+class ReadingListTests(TestCase):
+    def setUp(self):
+        self.member = make_member("shelver", "M-400")
+        self.book = make_book(title="Shelved", isbn="9780000000500")
+        self.client.force_login(self.member.user)
+
+    def test_toggle_adds_and_removes_book_from_shelf(self):
+        self.client.post(reverse("toggle_reading_list", args=[self.book.pk]))
+        self.assertTrue(self.member.reading_list.filter(book=self.book).exists())
+        self.client.post(reverse("toggle_reading_list", args=[self.book.pk]))
+        self.assertFalse(self.member.reading_list.filter(book=self.book).exists())
+
+    def test_my_shelf_page_lists_saved_books(self):
+        self.client.post(reverse("toggle_reading_list", args=[self.book.pk]))
+        response = self.client.get(reverse("my_shelf"))
+        self.assertContains(response, "Shelved")
+
+    def test_my_shelf_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("my_shelf"))
+        self.assertEqual(response.status_code, 302)
+
+
+class StaffPickTests(TestCase):
+    def test_staff_pick_badge_is_shown(self):
+        book = make_book(title="Pick of the month", isbn="9780000000600")
+        book.staff_pick = True
+        book.save(update_fields=("staff_pick",))
+        response = self.client.get(reverse("book_detail", args=[book.pk]))
+        self.assertContains(response, "Staff pick")
+        response = self.client.get(reverse("catalog"), {"staff_picks": "1"})
+        self.assertContains(response, "Pick of the month")
+
+    def test_staff_picks_filter_excludes_regular_titles(self):
+        picked = make_book(title="Picked Title", isbn="9780000000700")
+        picked.staff_pick = True
+        picked.save(update_fields=("staff_pick",))
+        make_book(title="Regular Title", isbn="9780000000701")
+        response = self.client.get(reverse("catalog"), {"staff_picks": "1"})
+        self.assertContains(response, "Picked Title")
+        self.assertNotContains(response, "Regular Title")
+
+
+class MemberStatsTests(TestCase):
+    def test_loans_page_shows_stats_and_badges(self):
+        member = make_member("collector", "M-500")
+        book = make_book(title="Stats Book", isbn="9780000000800")
+        self.client.force_login(member.user)
+        self.client.post(reverse("borrow_book", args=[book.pk]))
+        response = self.client.get(reverse("my_loans"))
+        self.assertContains(response, "books borrowed")
+        self.assertContains(response, "on-time returns")
+        self.assertContains(response, "First Borrow")
+        self.assertContains(response, "Perfect Reader")
+
+
+class DueSoonStaffDeskTests(TestCase):
+    def test_staff_desk_lists_books_coming_due(self):
+        staff = make_user("deskstaff", is_staff=True)
+        member = make_member("borrower", "M-600")
+        book = make_book(title="Due Soon Book", isbn="9780000000900")
+        self.client.force_login(member.user)
+        self.client.post(reverse("borrow_book", args=[book.pk]))
+        loan = Loan.objects.get(member=member, book=book)
+        loan.due_date = timezone.localdate() + timedelta(days=3)
+        loan.save(update_fields=("due_date",))
+        self.client.force_login(staff)
+        response = self.client.get(reverse("overdue_loans"))
+        self.assertContains(response, "Due in the next 7 days")
+        self.assertContains(response, "Due Soon Book")

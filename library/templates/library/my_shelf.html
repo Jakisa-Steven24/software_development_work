@@ -1,0 +1,33 @@
+{% extends "library/base.html" %}
+{% block title %}My shelf{% endblock %}
+{% block content %}
+<div class="shell page-shell">
+  <section class="page-intro page-intro--compact">
+    <div>
+      <p class="eyebrow">KEPT FOR LATER</p>
+      <h1>My <em>shelf.</em></h1>
+      <p>Books you have set aside to read next. Save as many as you like — the shelf never runs out of room.</p>
+    </div>
+    {% if member %}
+      <div class="member-chip"><span class="member-chip-mark" aria-hidden="true">CS</span><span><small>BOOKS SAVED</small><strong>{{ saved_books|length }}</strong></span></div>
+    {% endif %}
+  </section>
+
+  {% if member %}
+    {% if saved_books %}
+      <section class="book-grid" aria-label="Saved books">
+        {% for book in saved_books %}{% include "library/includes/book_card.html" with book=book %}{% endfor %}
+      </section>
+      <p class="shelf-hint">Change your mind? Open any saved book and choose “✓ On your shelf” to remove it.</p>
+    {% else %}
+      <div class="empty-state empty-state--wide">
+        <span class="empty-icon" aria-hidden="true">▧</span>
+        <div><h3>Your shelf is empty — for now.</h3><p>Browse the catalogue and tap “Save to your shelf” on any title you would like to read.</p></div>
+        <a class="button button--primary" href="{% url 'catalog' %}">Find your next read</a>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state empty-state--wide"><span class="empty-icon" aria-hidden="true">♧</span><div><h2>Membership profile not found</h2><p>Ask library staff to connect your login to a membership number and phone number.</p></div></div>
+  {% endif %}
+</div>
+{% endblock %}

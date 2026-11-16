@@ -1,5 +1,6 @@
 <article class="book-card">
   <a class="book-cover {% if book.pk|divisibleby:3 %}cover--espresso{% elif book.pk|divisibleby:2 %}cover--tan{% endif %}" href="{% url 'book_detail' book.pk %}" aria-label="View {{ book.title }}">
+    {% if book.staff_pick %}<span class="staff-pick-ribbon">Staff pick</span>{% endif %}
     <span class="cover-kicker">COMMUNITY SHELF</span>
     <span class="cover-title">{{ book.title|truncatechars:48 }}</span>
     <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-category">{{ book.genre|default:"Library edition" }}</span></span>
@@ -14,6 +15,7 @@
     {% with book.authors.all as authors %}
       <p class="book-author">{% if authors %}{{ authors|join:", " }}{% else %}Author details coming soon{% endif %}</p>
     {% endwith %}
+    <p class="card-rating">{% include "library/includes/stars.html" with avg=book.avg_rating count=book.review_count %}</p>
     <p class="book-meta">ISBN {{ book.isbn }}</p>
   </div>
 </article>
