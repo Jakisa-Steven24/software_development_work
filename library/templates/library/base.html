@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#173f35">
+  <meta name="theme-color" content="#3c281e">
   <title>{% block title %}Community Shelf{% endblock %} · Community Shelf</title>
   <link rel="stylesheet" href="{% static 'library/styles.css' %}">
   {% block extra_head %}{% endblock %}
@@ -13,8 +13,7 @@
   <header class="site-header">
     <div class="shell header-inner">
       <a class="brand" href="{% url 'home' %}" aria-label="Community Shelf home">
-        <span class="brand-mark" aria-hidden="true"><span></span><span></span></span>
-        <span class="brand-copy"><strong>community</strong><small>shelf library</small></span>
+        <span class="brand-mark" aria-hidden="true">CS</span>
       </a>
       <nav class="main-nav" aria-label="Main navigation">
         <a href="{% url 'catalog' %}" class="{% if request.resolver_match.url_name == 'catalog' or request.resolver_match.url_name == 'book_detail' %}is-active{% endif %}">Browse books</a>
@@ -67,9 +66,8 @@
 
   <footer class="site-footer">
     <div class="shell footer-inner">
-      <a class="brand brand--footer" href="{% url 'home' %}">
-        <span class="brand-mark" aria-hidden="true"><span></span><span></span></span>
-        <span class="brand-copy"><strong>community</strong><small>shelf library</small></span>
+      <a class="brand brand--footer" href="{% url 'home' %}" aria-label="Community Shelf home">
+        <span class="brand-mark" aria-hidden="true">CS</span>
       </a>
       <p>Good stories travel. Borrow, enjoy, and bring them back for the next reader.</p>
       <span class="footer-note">A little more room for stories.</span>

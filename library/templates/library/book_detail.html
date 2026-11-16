@@ -5,10 +5,10 @@
   <a class="back-link" href="{% url 'catalog' %}"><span aria-hidden="true">←</span> Back to the shelves</a>
   <section class="book-detail">
     <div class="detail-cover-wrap">
-      <div class="detail-cover" aria-label="Cover placeholder for {{ book.title }}">
+      <div class="detail-cover {% if book.pk|divisibleby:3 %}cover--espresso{% elif book.pk|divisibleby:2 %}cover--tan{% endif %}" aria-label="Library edition of {{ book.title }}">
         <span class="cover-kicker">COMMUNITY SHELF</span>
         <span class="detail-cover-title">{{ book.title }}</span>
-        <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-spark" aria-hidden="true">✳</span></span>
+        <span class="cover-bottom"><span>{{ book.publication_year }}</span><span class="cover-category">{{ book.genre|default:"Library edition" }}</span></span>
       </div>
       <p class="cover-caption">A story shared by the community</p>
     </div>
@@ -16,7 +16,7 @@
       <p class="eyebrow">ON OUR SHELVES</p>
       <h1>{{ book.title }}</h1>
       <p class="detail-authors">{% with book.authors.all as authors %}{% if authors %}By {{ authors|join:", " }}{% else %}Author details coming soon{% endif %}{% endwith %}</p>
-      <p class="detail-note">Every borrowed book helps keep our shared shelf alive. Enjoy your read, then return it for the next curious mind.</p>
+      <p class="detail-note">{{ book.description|default:"Borrow this title for 14 days. Please return it on time for the next reader." }}</p>
       <div class="detail-facts">
         <div><span>Publication year</span><strong>{{ book.publication_year }}</strong></div>
         <div><span>ISBN</span><strong>{{ book.isbn }}</strong></div>

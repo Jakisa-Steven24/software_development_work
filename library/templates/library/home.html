@@ -17,18 +17,15 @@
       </div>
       <div class="hero-trust"><span class="trust-mark" aria-hidden="true">✓</span> Borrow for free · Keep it for 14 days · Share the joy</div>
     </div>
-    <div class="hero-art" aria-hidden="true">
-      <div class="art-orbit art-orbit--one"></div>
-      <div class="art-orbit art-orbit--two"></div>
-      <div class="art-sun"></div>
-      <div class="art-note"><span class="art-note-icon">✳</span><span>READ<br>RETURN<br>REPEAT</span></div>
-      <div class="book-stack">
-        <div class="stack-book stack-book--back"><i></i><b>open<br>roads</b></div>
-        <div class="stack-book stack-book--middle"><i></i><b>small<br>wonders</b></div>
-        <div class="stack-book stack-book--front"><i></i><b>the art<br>of stories</b></div>
+    <div class="hero-art">
+      <div class="reading-shelf">
+        <span class="shelf-label">FROM OUR COLLECTION</span>
+        {% for book in latest_books %}
+          <a class="shelf-book" href="{% url 'book_detail' book.pk %}"><strong>{{ book.title }}</strong><small>{{ book.authors.all|join:", " }}</small></a>
+        {% empty %}
+          <p>Browse the catalogue to find your next read.</p>
+        {% endfor %}
       </div>
-      <div class="art-sticker"><strong>14</strong><span>days<br>to read</span></div>
-      <span class="art-caption">A whole world,<br>just one page away.</span>
     </div>
   </section>
 
@@ -50,7 +47,7 @@
       </div>
     {% else %}
       <div class="empty-state empty-state--wide">
-        <span class="empty-icon" aria-hidden="true">✳</span>
+        <span class="empty-icon" aria-hidden="true">CS</span>
         <div><h3>The shelves are waiting for their first story.</h3><p>Library staff can add books from the admin desk.</p></div>
         {% if user.is_staff %}<a class="button button--outline" href="{% url 'admin:library_book_add' %}">Add a book</a>{% endif %}
       </div>

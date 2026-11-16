@@ -39,7 +39,7 @@ class AuthorAdmin(admin.ModelAdmin):
 class BookAdmin(admin.ModelAdmin):
     form = BookAdminForm
     list_display = ("title", "isbn", "publication_year", "total_copies", "available_copies")
-    list_filter = ("publication_year", "authors")
+    list_filter = ("genre", "publication_year", "authors")
     search_fields = ("title", "isbn")
     filter_horizontal = ("authors",)
     ordering = ("title",)
