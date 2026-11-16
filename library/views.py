@@ -147,7 +147,7 @@ def borrow_book(request, book_id):
         book.save(update_fields=("available_copies", "updated_at"))
         messages.success(
             request,
-            f"You borrowed “{book.title}”. Please return it by {loan.due_date:%-d %b %Y}.",
+            f"You borrowed “{book.title}”. Please return it by {loan.due_date.day} {loan.due_date:%b %Y}.",
         )
 
     return redirect("book_detail", pk=book.pk)
